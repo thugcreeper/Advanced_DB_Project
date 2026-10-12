@@ -1,0 +1,1486 @@
+{
+  "approved94Included" : true,
+  "nationalReturned" : 23225,
+  "unassigned" : 0,
+  "districtsChecked" : 368,
+  "national" : {
+    "nodes" : 23238,
+    "clinics" : 22742,
+    "hospitals" : 483
+  },
+  "districts" : {
+    "南投縣中寮鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "南投縣仁愛鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "南投縣信義鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "南投縣南投市" : {
+      "total" : 101,
+      "unlocated" : 0
+    },
+    "南投縣名間鄉" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "南投縣國姓鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "南投縣埔里鎮" : {
+      "total" : 84,
+      "unlocated" : 0
+    },
+    "南投縣水里鄉" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "南投縣竹山鎮" : {
+      "total" : 46,
+      "unlocated" : 0
+    },
+    "南投縣草屯鎮" : {
+      "total" : 109,
+      "unlocated" : 0
+    },
+    "南投縣集集鎮" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "南投縣魚池鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "南投縣鹿谷鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "嘉義市東區" : {
+      "total" : 194,
+      "unlocated" : 0
+    },
+    "嘉義市西區" : {
+      "total" : 199,
+      "unlocated" : 0
+    },
+    "嘉義縣中埔鄉" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "嘉義縣六腳鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "嘉義縣大埔鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "嘉義縣大林鎮" : {
+      "total" : 24,
+      "unlocated" : 0
+    },
+    "嘉義縣太保市" : {
+      "total" : 27,
+      "unlocated" : 0
+    },
+    "嘉義縣布袋鎮" : {
+      "total" : 13,
+      "unlocated" : 0
+    },
+    "嘉義縣新港鄉" : {
+      "total" : 19,
+      "unlocated" : 0
+    },
+    "嘉義縣朴子市" : {
+      "total" : 51,
+      "unlocated" : 0
+    },
+    "嘉義縣東石鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "嘉義縣梅山鄉" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "嘉義縣民雄鄉" : {
+      "total" : 50,
+      "unlocated" : 0
+    },
+    "嘉義縣水上鄉" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "嘉義縣溪口鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "嘉義縣番路鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "嘉義縣竹崎鄉" : {
+      "total" : 19,
+      "unlocated" : 0
+    },
+    "嘉義縣義竹鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "嘉義縣阿里山鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "嘉義縣鹿草鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "基隆市七堵區" : {
+      "total" : 37,
+      "unlocated" : 0
+    },
+    "基隆市中山區" : {
+      "total" : 37,
+      "unlocated" : 0
+    },
+    "基隆市中正區" : {
+      "total" : 64,
+      "unlocated" : 0
+    },
+    "基隆市仁愛區" : {
+      "total" : 89,
+      "unlocated" : 0
+    },
+    "基隆市信義區" : {
+      "total" : 28,
+      "unlocated" : 0
+    },
+    "基隆市安樂區" : {
+      "total" : 31,
+      "unlocated" : 0
+    },
+    "基隆市暖暖區" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "宜蘭縣三星鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "宜蘭縣五結鄉" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "宜蘭縣冬山鄉" : {
+      "total" : 14,
+      "unlocated" : 0
+    },
+    "宜蘭縣南澳鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "宜蘭縣員山鄉" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "宜蘭縣壯圍鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "宜蘭縣大同鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "宜蘭縣宜蘭市" : {
+      "total" : 130,
+      "unlocated" : 0
+    },
+    "宜蘭縣礁溪鄉" : {
+      "total" : 19,
+      "unlocated" : 0
+    },
+    "宜蘭縣羅東鎮" : {
+      "total" : 129,
+      "unlocated" : 0
+    },
+    "宜蘭縣蘇澳鎮" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "宜蘭縣頭城鎮" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "屏東縣三地門鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "屏東縣九如鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "屏東縣佳冬鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "屏東縣來義鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "屏東縣內埔鄉" : {
+      "total" : 36,
+      "unlocated" : 0
+    },
+    "屏東縣南州鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "屏東縣屏東市" : {
+      "total" : 254,
+      "unlocated" : 0
+    },
+    "屏東縣崁頂鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "屏東縣恆春鎮" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "屏東縣新園鄉" : {
+      "total" : 11,
+      "unlocated" : 0
+    },
+    "屏東縣新埤鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "屏東縣春日鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "屏東縣東港鎮" : {
+      "total" : 50,
+      "unlocated" : 0
+    },
+    "屏東縣枋寮鄉" : {
+      "total" : 15,
+      "unlocated" : 0
+    },
+    "屏東縣枋山鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "屏東縣林邊鄉" : {
+      "total" : 13,
+      "unlocated" : 0
+    },
+    "屏東縣泰武鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "屏東縣滿州鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "屏東縣潮州鎮" : {
+      "total" : 78,
+      "unlocated" : 0
+    },
+    "屏東縣牡丹鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "屏東縣獅子鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "屏東縣琉球鄉" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "屏東縣瑪家鄉" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "屏東縣竹田鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "屏東縣萬丹鄉" : {
+      "total" : 31,
+      "unlocated" : 0
+    },
+    "屏東縣萬巒鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "屏東縣車城鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "屏東縣里港鄉" : {
+      "total" : 20,
+      "unlocated" : 0
+    },
+    "屏東縣長治鄉" : {
+      "total" : 12,
+      "unlocated" : 0
+    },
+    "屏東縣霧臺鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "屏東縣高樹鄉" : {
+      "total" : 19,
+      "unlocated" : 0
+    },
+    "屏東縣鹽埔鄉" : {
+      "total" : 11,
+      "unlocated" : 0
+    },
+    "屏東縣麟洛鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "彰化縣二林鎮" : {
+      "total" : 41,
+      "unlocated" : 0
+    },
+    "彰化縣二水鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "彰化縣伸港鄉" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "彰化縣北斗鎮" : {
+      "total" : 46,
+      "unlocated" : 0
+    },
+    "彰化縣和美鎮" : {
+      "total" : 67,
+      "unlocated" : 0
+    },
+    "彰化縣員林市" : {
+      "total" : 197,
+      "unlocated" : 0
+    },
+    "彰化縣埔心鄉" : {
+      "total" : 15,
+      "unlocated" : 0
+    },
+    "彰化縣埔鹽鄉" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "彰化縣埤頭鄉" : {
+      "total" : 15,
+      "unlocated" : 0
+    },
+    "彰化縣大城鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "彰化縣大村鄉" : {
+      "total" : 14,
+      "unlocated" : 0
+    },
+    "彰化縣彰化市" : {
+      "total" : 293,
+      "unlocated" : 0
+    },
+    "彰化縣永靖鄉" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "彰化縣溪州鄉" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "彰化縣溪湖鎮" : {
+      "total" : 61,
+      "unlocated" : 0
+    },
+    "彰化縣田中鎮" : {
+      "total" : 39,
+      "unlocated" : 0
+    },
+    "彰化縣田尾鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "彰化縣社頭鄉" : {
+      "total" : 23,
+      "unlocated" : 0
+    },
+    "彰化縣福興鄉" : {
+      "total" : 11,
+      "unlocated" : 0
+    },
+    "彰化縣秀水鄉" : {
+      "total" : 25,
+      "unlocated" : 0
+    },
+    "彰化縣竹塘鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "彰化縣線西鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "彰化縣芬園鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "彰化縣花壇鄉" : {
+      "total" : 31,
+      "unlocated" : 0
+    },
+    "彰化縣芳苑鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "彰化縣鹿港鎮" : {
+      "total" : 77,
+      "unlocated" : 0
+    },
+    "新北市三峽區" : {
+      "total" : 96,
+      "unlocated" : 0
+    },
+    "新北市三芝區" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "新北市三重區" : {
+      "total" : 385,
+      "unlocated" : 0
+    },
+    "新北市中和區" : {
+      "total" : 372,
+      "unlocated" : 0
+    },
+    "新北市五股區" : {
+      "total" : 41,
+      "unlocated" : 0
+    },
+    "新北市八里區" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "新北市土城區" : {
+      "total" : 217,
+      "unlocated" : 0
+    },
+    "新北市坪林區" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "新北市平溪區" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "新北市新店區" : {
+      "total" : 251,
+      "unlocated" : 0
+    },
+    "新北市新莊區" : {
+      "total" : 420,
+      "unlocated" : 0
+    },
+    "新北市板橋區" : {
+      "total" : 642,
+      "unlocated" : 0
+    },
+    "新北市林口區" : {
+      "total" : 118,
+      "unlocated" : 0
+    },
+    "新北市樹林區" : {
+      "total" : 121,
+      "unlocated" : 0
+    },
+    "新北市永和區" : {
+      "total" : 303,
+      "unlocated" : 0
+    },
+    "新北市汐止區" : {
+      "total" : 140,
+      "unlocated" : 0
+    },
+    "新北市泰山區" : {
+      "total" : 62,
+      "unlocated" : 0
+    },
+    "新北市淡水區" : {
+      "total" : 123,
+      "unlocated" : 0
+    },
+    "新北市深坑區" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "新北市烏來區" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "新北市瑞芳區" : {
+      "total" : 23,
+      "unlocated" : 0
+    },
+    "新北市石碇區" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "新北市石門區" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "新北市萬里區" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "新北市蘆洲區" : {
+      "total" : 212,
+      "unlocated" : 0
+    },
+    "新北市貢寮區" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "新北市金山區" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "新北市雙溪區" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "新北市鶯歌區" : {
+      "total" : 49,
+      "unlocated" : 0
+    },
+    "新竹市北區" : {
+      "total" : 124,
+      "unlocated" : 0
+    },
+    "新竹市東區" : {
+      "total" : 299,
+      "unlocated" : 0
+    },
+    "新竹市香山區" : {
+      "total" : 14,
+      "unlocated" : 0
+    },
+    "新竹縣五峰鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "新竹縣北埔鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "新竹縣寶山鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "新竹縣尖石鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "新竹縣峨眉鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "新竹縣新埔鎮" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "新竹縣新豐鄉" : {
+      "total" : 33,
+      "unlocated" : 0
+    },
+    "新竹縣橫山鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "新竹縣湖口鄉" : {
+      "total" : 40,
+      "unlocated" : 0
+    },
+    "新竹縣竹北市" : {
+      "total" : 242,
+      "unlocated" : 0
+    },
+    "新竹縣竹東鎮" : {
+      "total" : 78,
+      "unlocated" : 0
+    },
+    "新竹縣芎林鄉" : {
+      "total" : 5,
+      "unlocated" : 1
+    },
+    "新竹縣關西鎮" : {
+      "total" : 20,
+      "unlocated" : 0
+    },
+    "桃園市中壢區" : {
+      "total" : 436,
+      "unlocated" : 0
+    },
+    "桃園市八德區" : {
+      "total" : 141,
+      "unlocated" : 0
+    },
+    "桃園市大園區" : {
+      "total" : 53,
+      "unlocated" : 0
+    },
+    "桃園市大溪區" : {
+      "total" : 40,
+      "unlocated" : 0
+    },
+    "桃園市平鎮區" : {
+      "total" : 96,
+      "unlocated" : 0
+    },
+    "桃園市復興區" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "桃園市新屋區" : {
+      "total" : 14,
+      "unlocated" : 0
+    },
+    "桃園市桃園區" : {
+      "total" : 549,
+      "unlocated" : 0
+    },
+    "桃園市楊梅區" : {
+      "total" : 103,
+      "unlocated" : 0
+    },
+    "桃園市蘆竹區" : {
+      "total" : 124,
+      "unlocated" : 0
+    },
+    "桃園市觀音區" : {
+      "total" : 21,
+      "unlocated" : 0
+    },
+    "桃園市龍潭區" : {
+      "total" : 75,
+      "unlocated" : 0
+    },
+    "桃園市龜山區" : {
+      "total" : 134,
+      "unlocated" : 0
+    },
+    "澎湖縣七美鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "澎湖縣望安鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "澎湖縣湖西鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "澎湖縣白沙鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "澎湖縣西嶼鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "澎湖縣馬公市" : {
+      "total" : 70,
+      "unlocated" : 0
+    },
+    "臺中市中區" : {
+      "total" : 48,
+      "unlocated" : 0
+    },
+    "臺中市北區" : {
+      "total" : 288,
+      "unlocated" : 0
+    },
+    "臺中市北屯區" : {
+      "total" : 426,
+      "unlocated" : 0
+    },
+    "臺中市南區" : {
+      "total" : 181,
+      "unlocated" : 0
+    },
+    "臺中市南屯區" : {
+      "total" : 367,
+      "unlocated" : 0
+    },
+    "臺中市后里區" : {
+      "total" : 44,
+      "unlocated" : 0
+    },
+    "臺中市和平區" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "臺中市外埔區" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "臺中市大安區" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "臺中市大甲區" : {
+      "total" : 82,
+      "unlocated" : 0
+    },
+    "臺中市大肚區" : {
+      "total" : 37,
+      "unlocated" : 0
+    },
+    "臺中市大里區" : {
+      "total" : 231,
+      "unlocated" : 0
+    },
+    "臺中市大雅區" : {
+      "total" : 81,
+      "unlocated" : 0
+    },
+    "臺中市太平區" : {
+      "total" : 192,
+      "unlocated" : 0
+    },
+    "臺中市新社區" : {
+      "total" : 13,
+      "unlocated" : 0
+    },
+    "臺中市東勢區" : {
+      "total" : 52,
+      "unlocated" : 0
+    },
+    "臺中市東區" : {
+      "total" : 99,
+      "unlocated" : 0
+    },
+    "臺中市梧棲區" : {
+      "total" : 26,
+      "unlocated" : 0
+    },
+    "臺中市沙鹿區" : {
+      "total" : 91,
+      "unlocated" : 0
+    },
+    "臺中市清水區" : {
+      "total" : 78,
+      "unlocated" : 0
+    },
+    "臺中市潭子區" : {
+      "total" : 105,
+      "unlocated" : 0
+    },
+    "臺中市烏日區" : {
+      "total" : 78,
+      "unlocated" : 0
+    },
+    "臺中市石岡區" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "臺中市神岡區" : {
+      "total" : 43,
+      "unlocated" : 0
+    },
+    "臺中市西區" : {
+      "total" : 293,
+      "unlocated" : 0
+    },
+    "臺中市西屯區" : {
+      "total" : 369,
+      "unlocated" : 0
+    },
+    "臺中市豐原區" : {
+      "total" : 234,
+      "unlocated" : 0
+    },
+    "臺中市霧峰區" : {
+      "total" : 56,
+      "unlocated" : 0
+    },
+    "臺中市龍井區" : {
+      "total" : 46,
+      "unlocated" : 0
+    },
+    "臺北市中山區" : {
+      "total" : 421,
+      "unlocated" : 0
+    },
+    "臺北市中正區" : {
+      "total" : 253,
+      "unlocated" : 0
+    },
+    "臺北市信義區" : {
+      "total" : 277,
+      "unlocated" : 0
+    },
+    "臺北市內湖區" : {
+      "total" : 281,
+      "unlocated" : 0
+    },
+    "臺北市北投區" : {
+      "total" : 205,
+      "unlocated" : 0
+    },
+    "臺北市南港區" : {
+      "total" : 92,
+      "unlocated" : 0
+    },
+    "臺北市士林區" : {
+      "total" : 293,
+      "unlocated" : 0
+    },
+    "臺北市大同區" : {
+      "total" : 148,
+      "unlocated" : 0
+    },
+    "臺北市大安區" : {
+      "total" : 672,
+      "unlocated" : 0
+    },
+    "臺北市文山區" : {
+      "total" : 206,
+      "unlocated" : 0
+    },
+    "臺北市松山區" : {
+      "total" : 272,
+      "unlocated" : 0
+    },
+    "臺北市萬華區" : {
+      "total" : 168,
+      "unlocated" : 0
+    },
+    "臺南市七股區" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "臺南市下營區" : {
+      "total" : 13,
+      "unlocated" : 0
+    },
+    "臺南市中西區" : {
+      "total" : 174,
+      "unlocated" : 3
+    },
+    "臺南市仁德區" : {
+      "total" : 53,
+      "unlocated" : 0
+    },
+    "臺南市佳里區" : {
+      "total" : 63,
+      "unlocated" : 0
+    },
+    "臺南市六甲區" : {
+      "total" : 13,
+      "unlocated" : 0
+    },
+    "臺南市北區" : {
+      "total" : 221,
+      "unlocated" : 0
+    },
+    "臺南市北門區" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "臺南市南化區" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "臺南市南區" : {
+      "total" : 143,
+      "unlocated" : 0
+    },
+    "臺南市善化區" : {
+      "total" : 54,
+      "unlocated" : 0
+    },
+    "臺南市大內區" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "臺南市學甲區" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "臺南市安南區" : {
+      "total" : 138,
+      "unlocated" : 0
+    },
+    "臺南市安定區" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "臺南市安平區" : {
+      "total" : 84,
+      "unlocated" : 0
+    },
+    "臺南市官田區" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "臺南市將軍區" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "臺南市山上區" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "臺南市左鎮區" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "臺南市後壁區" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "臺南市新化區" : {
+      "total" : 36,
+      "unlocated" : 0
+    },
+    "臺南市新市區" : {
+      "total" : 40,
+      "unlocated" : 0
+    },
+    "臺南市新營區" : {
+      "total" : 114,
+      "unlocated" : 0
+    },
+    "臺南市東區" : {
+      "total" : 316,
+      "unlocated" : 0
+    },
+    "臺南市東山區" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "臺南市柳營區" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "臺南市楠西區" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "臺南市歸仁區" : {
+      "total" : 64,
+      "unlocated" : 0
+    },
+    "臺南市永康區" : {
+      "total" : 263,
+      "unlocated" : 0
+    },
+    "臺南市玉井區" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "臺南市白河區" : {
+      "total" : 24,
+      "unlocated" : 0
+    },
+    "臺南市西港區" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "臺南市關廟區" : {
+      "total" : 19,
+      "unlocated" : 0
+    },
+    "臺南市鹽水區" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "臺南市麻豆區" : {
+      "total" : 43,
+      "unlocated" : 0
+    },
+    "臺南市龍崎區" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "臺東縣卑南鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "臺東縣大武鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "臺東縣太麻里鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "臺東縣延平鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "臺東縣成功鎮" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "臺東縣東河鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "臺東縣池上鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "臺東縣海端鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "臺東縣綠島鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "臺東縣臺東市" : {
+      "total" : 108,
+      "unlocated" : 0
+    },
+    "臺東縣蘭嶼鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "臺東縣達仁鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "臺東縣金峰鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "臺東縣長濱鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "臺東縣關山鎮" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "臺東縣鹿野鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "花蓮縣光復鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "花蓮縣卓溪鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "花蓮縣吉安鄉" : {
+      "total" : 48,
+      "unlocated" : 0
+    },
+    "花蓮縣壽豐鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "花蓮縣富里鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "花蓮縣新城鄉" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "花蓮縣玉里鎮" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "花蓮縣瑞穗鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "花蓮縣秀林鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "花蓮縣花蓮市" : {
+      "total" : 160,
+      "unlocated" : 0
+    },
+    "花蓮縣萬榮鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "花蓮縣豐濱鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "花蓮縣鳳林鎮" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "苗栗縣三灣鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "苗栗縣三義鄉" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "苗栗縣公館鄉" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "苗栗縣卓蘭鎮" : {
+      "total" : 11,
+      "unlocated" : 0
+    },
+    "苗栗縣南庄鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "苗栗縣大湖鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "苗栗縣後龍鎮" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "苗栗縣泰安鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "苗栗縣獅潭鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "苗栗縣竹南鎮" : {
+      "total" : 66,
+      "unlocated" : 0
+    },
+    "苗栗縣苑裡鎮" : {
+      "total" : 34,
+      "unlocated" : 0
+    },
+    "苗栗縣苗栗市" : {
+      "total" : 103,
+      "unlocated" : 0
+    },
+    "苗栗縣西湖鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "苗栗縣通霄鎮" : {
+      "total" : 14,
+      "unlocated" : 0
+    },
+    "苗栗縣造橋鄉" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "苗栗縣銅鑼鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "苗栗縣頭份市" : {
+      "total" : 88,
+      "unlocated" : 0
+    },
+    "苗栗縣頭屋鄉" : {
+      "total" : 5,
+      "unlocated" : 0
+    },
+    "連江縣北竿鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "連江縣南竿鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "連江縣東引鄉" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "連江縣莒光鄉" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "金門縣烈嶼鄉" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "金門縣烏坵鄉" : {
+      "total" : 0,
+      "unlocated" : 0
+    },
+    "金門縣金城鎮" : {
+      "total" : 36,
+      "unlocated" : 0
+    },
+    "金門縣金寧鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "金門縣金沙鎮" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "金門縣金湖鎮" : {
+      "total" : 13,
+      "unlocated" : 0
+    },
+    "雲林縣二崙鄉" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "雲林縣元長鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "雲林縣北港鎮" : {
+      "total" : 47,
+      "unlocated" : 0
+    },
+    "雲林縣口湖鄉" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "雲林縣古坑鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "雲林縣四湖鄉" : {
+      "total" : 11,
+      "unlocated" : 0
+    },
+    "雲林縣土庫鎮" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "雲林縣大埤鄉" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "雲林縣崙背鄉" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "雲林縣斗六市" : {
+      "total" : 133,
+      "unlocated" : 0
+    },
+    "雲林縣斗南鎮" : {
+      "total" : 41,
+      "unlocated" : 0
+    },
+    "雲林縣東勢鄉" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "雲林縣林內鄉" : {
+      "total" : 8,
+      "unlocated" : 0
+    },
+    "雲林縣水林鄉" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "雲林縣臺西鄉" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "雲林縣莿桐鄉" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "雲林縣虎尾鎮" : {
+      "total" : 92,
+      "unlocated" : 0
+    },
+    "雲林縣褒忠鄉" : {
+      "total" : 7,
+      "unlocated" : 0
+    },
+    "雲林縣西螺鎮" : {
+      "total" : 46,
+      "unlocated" : 0
+    },
+    "雲林縣麥寮鄉" : {
+      "total" : 22,
+      "unlocated" : 0
+    },
+    "高雄市三民區" : {
+      "total" : 489,
+      "unlocated" : 0
+    },
+    "高雄市仁武區" : {
+      "total" : 88,
+      "unlocated" : 0
+    },
+    "高雄市內門區" : {
+      "total" : 3,
+      "unlocated" : 0
+    },
+    "高雄市六龜區" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "高雄市前金區" : {
+      "total" : 65,
+      "unlocated" : 0
+    },
+    "高雄市前鎮區" : {
+      "total" : 188,
+      "unlocated" : 0
+    },
+    "高雄市大寮區" : {
+      "total" : 66,
+      "unlocated" : 0
+    },
+    "高雄市大樹區" : {
+      "total" : 23,
+      "unlocated" : 0
+    },
+    "高雄市大社區" : {
+      "total" : 25,
+      "unlocated" : 0
+    },
+    "高雄市小港區" : {
+      "total" : 91,
+      "unlocated" : 0
+    },
+    "高雄市岡山區" : {
+      "total" : 116,
+      "unlocated" : 0
+    },
+    "高雄市左營區" : {
+      "total" : 342,
+      "unlocated" : 0
+    },
+    "高雄市彌陀區" : {
+      "total" : 9,
+      "unlocated" : 0
+    },
+    "高雄市新興區" : {
+      "total" : 150,
+      "unlocated" : 0
+    },
+    "高雄市旗山區" : {
+      "total" : 47,
+      "unlocated" : 0
+    },
+    "高雄市旗津區" : {
+      "total" : 10,
+      "unlocated" : 0
+    },
+    "高雄市杉林區" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "高雄市林園區" : {
+      "total" : 40,
+      "unlocated" : 0
+    },
+    "高雄市桃源區" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "高雄市梓官區" : {
+      "total" : 21,
+      "unlocated" : 0
+    },
+    "高雄市楠梓區" : {
+      "total" : 181,
+      "unlocated" : 0
+    },
+    "高雄市橋頭區" : {
+      "total" : 28,
+      "unlocated" : 0
+    },
+    "高雄市永安區" : {
+      "total" : 6,
+      "unlocated" : 0
+    },
+    "高雄市湖內區" : {
+      "total" : 14,
+      "unlocated" : 0
+    },
+    "高雄市燕巢區" : {
+      "total" : 17,
+      "unlocated" : 0
+    },
+    "高雄市田寮區" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "高雄市甲仙區" : {
+      "total" : 4,
+      "unlocated" : 0
+    },
+    "高雄市美濃區" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "高雄市苓雅區" : {
+      "total" : 283,
+      "unlocated" : 0
+    },
+    "高雄市茂林區" : {
+      "total" : 1,
+      "unlocated" : 0
+    },
+    "高雄市茄萣區" : {
+      "total" : 21,
+      "unlocated" : 0
+    },
+    "高雄市路竹區" : {
+      "total" : 43,
+      "unlocated" : 0
+    },
+    "高雄市那瑪夏區" : {
+      "total" : 2,
+      "unlocated" : 0
+    },
+    "高雄市阿蓮區" : {
+      "total" : 18,
+      "unlocated" : 0
+    },
+    "高雄市鳥松區" : {
+      "total" : 16,
+      "unlocated" : 0
+    },
+    "高雄市鳳山區" : {
+      "total" : 396,
+      "unlocated" : 0
+    },
+    "高雄市鹽埕區" : {
+      "total" : 28,
+      "unlocated" : 0
+    },
+    "高雄市鼓山區" : {
+      "total" : 177,
+      "unlocated" : 0
+    }
+  },
+  "unlocated" : 4
+}

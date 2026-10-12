@@ -1,0 +1,23 @@
+# Local source datasets (not frontend assets)
+/data/medicalFacilities.json
+/data/pharmacy.json
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+**/application-local.properties
+**/application-local.yml
+**/application-local.yaml
+
+# Java build output and local dependency cache
+/backend/target/
+/backend/.maven-cache/
+*.log
+
+# IDE-local settings
+.idea/
+*.iml
+.classpath
+.project
+.settings/

@@ -1,0 +1,47 @@
+main { padding: 25px 25px 32px; min-width: 0; }
+h1 { font-size: 34px; line-height: 1.4; }
+.page-heading { margin-bottom: 22px; }
+.district-grid { display: grid; grid-template-columns: minmax(300px, 40fr) minmax(0, 60fr); gap: 24px; align-items: start; }
+.search-column, .map-column { min-width: 0; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fields label { display: grid; gap: 7px; font-size: 14px; }
+.fields label:last-child { grid-column: 1 / -1; }
+select { width: 100%; min-width: 0; min-height: 43px; padding: 8px 10px; border: 1px solid #bdc8d5; border-radius: 4px; background: #fff; color: #26313f; }
+select:disabled { background: #f3f5f7; color: #737b86; }
+.search-actions { display: flex; justify-content: flex-end; padding: 14px 0 20px; }
+.search-actions button { min-width: 100px; }
+.results { border-top: 1px solid #cfd6e1; }
+.results-heading, .map-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 16px 0 10px; }
+.result-count { color: #26313f; font-size: 14px; font-variant-numeric: tabular-nums; }
+.search-status { font-size: 14px; line-height: 1.7; padding: 8px 0 12px; color: #647080; overflow-wrap: anywhere; }
+.search-status.is-error, .error-message { color: #b32636; }
+.error-message { padding: 8px 0; font-size: 14px; line-height: 1.7; }
+.location-notice { padding: 8px 10px; border-left: 3px solid #b77922; background: #fff8eb; color: #785419; font-size: 13px; line-height: 1.7; margin-bottom: 8px; }
+.facility-list { padding: 0; margin: 0; list-style: none; max-height: 600px; overflow-y: auto; scrollbar-gutter: stable; }
+.facility-list li { padding: 15px 0; border-bottom: 1px solid #dde2e9; }
+.facility-title { display: flex; align-items: start; gap: 10px; justify-content: space-between; }
+.facility-title h3 { font-size: 16px; line-height: 1.6; margin: 0; overflow-wrap: anywhere; }
+.facility-type { display: block; font-size: 12px; color: #647080; margin: 3px 0 8px; }
+.facility-address, .facility-phone, .facility-coordinates { line-height: 1.7; font-size: 13px; overflow-wrap: anywhere; }
+.facility-coordinates { color: #647080; font-variant-numeric: tabular-nums; }
+.facility-phone a { color: #075bc8; }
+.locate-button { flex: 0 0 32px; width: 32px; height: 32px; padding: 6px; border: 1px solid #cbd2dc; border-radius: 4px; background: #f5f6f8; color: #124fa3; }
+.locate-button:disabled { color: #8995a3; background: #f6f7f9; }
+.locate-button svg { width: 18px; height: 18px; }
+.map-heading { padding-top: 0; }
+.map-count { color: #647080; font-size: 12px; }
+.map-wrap { position: relative; height: 680px; min-height: 420px; }
+#map { position: absolute; inset: 0; background: #d6e2e8; }
+.map-home { position: absolute; z-index: 500; top: 82px; left: 10px; width: 32px; height: 32px; border: 2px solid #0003; border-radius: 4px; background: #fff; color: #26313f; font-size: 22px; }
+.map-legend { position: absolute; z-index: 500; top: 12px; right: 12px; display: flex; gap: 14px; background: #fffffff2; padding: 9px 12px; border: 1px solid #aab3be; border-radius: 4px; font-size: 12px; pointer-events: none; }
+.map-legend span { display: flex; gap: 6px; align-items: center; }
+.map-legend i { width: 10px; height: 10px; border-radius: 50%; }
+.hospital-dot { background: #bf3446; } .clinic-dot { background: #178779; }
+.map-status { font-size: 12px; line-height: 1.6; padding: 8px 12px; color: #8b3f16; background: #fff3e8; }
+.facility-popup { min-width: 190px; max-width: 260px; overflow-wrap: anywhere; }
+.facility-popup strong { display: block; font-size: 14px; margin-bottom: 5px; }
+.facility-popup p { margin: 5px 0; font-size: 12px; }
+.leaflet-control-attribution { font-size: 10px; }
+@media (max-width: 1100px) and (min-width: 761px) { .workspace { grid-template-columns: 160px minmax(0, 1fr); } .nav-item { font-size: 15px; gap: 10px; padding: 10px; } main { padding: 20px 16px; } .district-grid { grid-template-columns: minmax(260px, 45fr) minmax(0, 55fr); gap: 16px; } }
+@media (max-width: 760px) { main { padding: 18px 14px; } h1 { font-size: 28px; } .district-grid { grid-template-columns: 1fr; gap: 22px; } .facility-list { max-height: 380px; } .map-wrap { height: 480px; } }
+@media (max-width: 390px) { .fields { grid-template-columns: 1fr; } }

@@ -1,0 +1,18 @@
+[
+  {
+    "viewport": "desktop",
+    "visibleTilesComplete": true,
+    "tiles": {
+      "total": 16,
+      "loaded": 16
+    }
+  },
+  {
+    "viewport": "mobile",
+    "visibleTilesComplete": true,
+    "tiles": {
+      "total": 6,
+      "loaded": 6
+    }
+  }
+]

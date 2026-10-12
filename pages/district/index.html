@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="api-base" content="">
+<title>行政區查詢｜臺灣醫療資源分析系統</title>
+<link rel="stylesheet" href="../../shared/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar"><strong>臺灣醫療資源分析系統</strong><button class="text-button" id="aboutButton" type="button">ⓘ 關於本專案</button></header>
+<div class="workspace">
+<nav class="sidebar" aria-label="主導覽">
+<button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">⌂</span><span>首頁<small>尚未開放</small></span></button>
+<a class="nav-item" href="../query/index.html"><span class="nav-icon" aria-hidden="true">⌕</span><span>查詢分析</span></a>
+<a class="nav-item active" href="./index.html" aria-current="page"><span class="nav-icon" aria-hidden="true">▤</span><span>行政區查詢</span></a>
+<button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">♧</span><span>圖形關係<small>尚未開放</small></span></button>
+<button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">ⓘ</span><span>資料介紹<small>尚未開放</small></span></button>
+</nav>
+<main>
+<div class="page-heading"><h1>行政區查詢</h1></div>
+<div class="district-grid">
+<div class="search-column">
+<form id="districtForm" aria-label="行政區搜尋">
+<div class="fields">
+<label for="county">縣市<select id="county" required disabled><option value="">載入縣市中…</option></select></label>
+<label for="district">鄉鎮市區<select id="district" disabled><option value="">請先選擇縣市</option></select></label>
+<label for="facilityType">院所類型<select id="facilityType"><option value="all">全部</option><option value="hospital">醫院</option><option value="clinic">診所</option></select></label>
+</div>
+<div class="search-actions"><button id="searchButton" class="primary" type="submit" disabled>搜尋</button></div>
+</form>
+<p id="catalogError" class="error-message" role="alert" hidden></p>
+<button id="retryCatalog" class="secondary" type="button" hidden>重新載入行政區</button>
+<section class="results" aria-labelledby="resultsTitle" aria-busy="false">
+<div class="results-heading"><h2 id="resultsTitle">搜尋結果</h2><span id="totalCount" class="result-count">尚未搜尋</span></div>
+<p id="searchStatus" class="search-status" role="status" aria-live="polite">請選擇縣市。</p>
+<p id="locationNotice" class="location-notice" hidden></p>
+<p id="assignmentNotice" class="location-notice" hidden></p>
+<ul id="facilityResults" class="facility-list" aria-label="醫療院所結果"></ul>
+</section>
+</div>
+<section class="map-column" aria-labelledby="mapTitle">
+<div class="map-heading"><h2 id="mapTitle">院所位置</h2><span id="markerCount" class="map-count">0 個標記</span></div>
+<div class="map-wrap"><div id="map" aria-label="醫療院所互動地圖"></div>
+<button id="resetMap" class="map-home" type="button" title="返回臺灣全圖" aria-label="返回臺灣全圖">⌂</button>
+<div class="map-legend"><span><i class="hospital-dot"></i>醫院</span><span><i class="clinic-dot"></i>診所</span></div>
+</div><p id="mapStatus" class="map-status" role="status" hidden></p>
+</section>
+</div>
+</main>
+</div>
+<dialog id="aboutDialog"><h2>關於本專案</h2><p>臺灣醫療資源分析系統。行政區查詢使用實際院所資料；查詢分析頁面仍使用示範統計資料。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
+<script src="../../shared/vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "CSV dropdown and initial disabled conditions",
+    "County switch clears district and isolates identical names",
+    "Xiangshan all/hospital/clinic complete lists and markers",
+    "Popup shows actual name/type/address/phone",
+    "Direct marker click opens popup",
+    "Repeated searches replace markers; approved assignments included",
+    "Real empty result differs from error",
+    "Database failure clears prior markers and is not zero",
+    "Network failure shown distinctly",
+    "Mobile results and map fit viewport",
+    "Existing analysis editor/examples/sort/filters/CSV/map regression",
+    "Catalog API failure supports retry"
+  ],
+  "scriptErrors": [],
+  "tileErrors": [
+    "net::ERR_ABORTED"
+  ]
+}
