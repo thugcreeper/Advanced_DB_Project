@@ -17,51 +17,63 @@
 <button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">ⓘ</span><span>資料介紹<small>尚未開放</small></span></button>
 </nav>
 <main>
-<div class="page-heading"><h1>查詢分析</h1><span class="mode-label">模擬查詢模式</span></div>
-<p class="subtitle">輸入 Cypher 查詢，並在地圖上顯示結果</p>
+<div class="page-heading"><h1>查詢分析</h1><span class="mode-label">統計查詢</span></div>
+<p class="subtitle">行政區醫療資源統計</p>
 <div class="analysis-grid">
 <div class="query-column">
 <section class="query-panel" aria-label="查詢設定">
 <div class="mode-tabs" role="tablist" aria-label="查詢模式">
-<button id="cypherTab" class="mode-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="cypherPane" tabindex="0" data-mode="cypher">Cypher 查詢</button>
-<button id="builderTab" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="builderPane" tabindex="-1" data-mode="builder">條件篩選</button>
+<button id="cypherTab" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="cypherPane" tabindex="0" data-mode="cypher">Cypher 查詢</button>
+<button id="builderTab" class="mode-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="builderPane" tabindex="-1" data-mode="builder">條件篩選</button>
 </div>
-<form id="cypherPane" class="mode-pane is-active" role="tabpanel" aria-labelledby="cypherTab" data-pane="cypher">
+<form id="cypherPane" class="mode-pane" hidden role="tabpanel" aria-labelledby="cypherTab" data-pane="cypher">
 <div class="panel-heading"><h2>Cypher 查詢</h2><label class="example-label">範例查詢<select id="exampleQuery" aria-label="範例查詢"></select></label></div>
 <label class="sr-only" for="cypherInput">Cypher 查詢內容</label><textarea id="cypherInput" spellcheck="false" rows="5"></textarea>
 <div class="actions"><button class="primary" type="submit">▶ 執行查詢</button><button id="clearCypher" class="secondary" type="button">清除</button></div>
 <p id="cypherStatus" class="status" role="status" aria-live="polite"></p>
 </form>
-<form id="builderPane" class="mode-pane" role="tabpanel" aria-labelledby="builderTab" data-pane="builder" hidden>
+<form id="builderPane" class="mode-pane is-active" role="tabpanel" aria-labelledby="builderTab" data-pane="builder">
 <div class="panel-heading"><h2>條件篩選</h2></div>
 <div class="filter-fields">
-<label>縣市<select id="county"><option value="">全部縣市（示範資料）</option></select></label>
+<label>縣市<select id="county"><option value="">全國</option></select></label>
+<label>行政區<select id="districtCode" disabled><option value="">全部行政區</option></select></label>
 <label>平均所得最低門檻（千元）<input id="minIncome" type="number" min="0" step="1" placeholder="不限"></label>
 <label>醫院家數最大值<input id="maxHospitals" type="number" min="0" step="1" placeholder="不限"></label>
 <label>診所家數最小值<input id="minClinics" type="number" min="0" step="1" placeholder="不限"></label>
+<label>人口下限<input id="populationMin" type="number" min="0" step="1"></label>
+<label>人口上限<input id="populationMax" type="number" min="0" step="1"></label>
+<label>面積下限（平方公里）<input id="areaMin" type="number" min="0" step="any"></label>
+<label>面積上限（平方公里）<input id="areaMax" type="number" min="0" step="any"></label>
+<label>醫事人員<select id="personnel"><option value="">不限</option></select></label>
+<label>人員數下限<input id="personnelMin" type="number" min="0" step="1" disabled placeholder="不限"></label>
+<label>醫療科別<select id="specialty"><option value="">不限</option></select></label>
+<label>提供所選科別的院所家數下限<input id="specialtyMin" type="number" min="0" step="1" disabled placeholder="不限"></label>
+<label>人員／科別統計範圍<select id="scope"><option value="all">醫院＋診所</option><option value="hospital">醫院</option><option value="clinic">診所</option></select></label>
+<label>排序欄位<select id="sortField"><option value="income">平均所得</option><option value="population">人口</option><option value="area">面積</option><option value="hospitalCount">醫院家數</option><option value="clinicCount">診所家數</option><option value="personnel">所選人員數</option><option value="specialty">所選科別院所家數</option><option value="doctorRate">每萬人口醫師數（三類）</option><option value="westernDoctorRate">每萬人口西醫師數</option><option value="westernDoctors">西醫師合計</option><option value="chineseDoctors">中醫師合計</option><option value="dentists">牙醫師合計</option></select></label>
+<label>排序方向<select id="sortDirection"><option value="desc">由高至低</option><option value="asc">由低至高</option></select></label>
 </div>
-<div class="actions"><button class="primary" type="submit">執行篩選</button><button class="secondary" type="reset">重設</button></div>
+<div class="actions"><button id="searchButton" disabled class="primary" type="submit">執行篩選</button><button class="secondary" type="reset">重設</button></div>
 </form>
 </section>
 <section class="results-panel" aria-labelledby="resultsTitle">
 <div class="panel-heading"><h2 id="resultsTitle">查詢結果 <span class="count">（共 <b id="resultCount">0</b> 筆）</span></h2><button id="downloadCsv" class="secondary compact" type="button">↓ 下載 CSV</button></div>
 <p id="queryModeLabel" class="result-source"></p>
-<div class="table-scroll"><table><thead><tr><th scope="col">#</th><th scope="col"><button type="button" data-sort="name">地區 ↕</button></th><th scope="col"><button type="button" data-sort="averageIncome">平均所得<br>（千元）↕</button></th><th scope="col"><button type="button" data-sort="hospitalCount">醫院<br>家數 ↕</button></th><th scope="col"><button type="button" data-sort="clinicCount">診所<br>家數 ↕</button></th></tr></thead><tbody id="resultRows"></tbody></table></div>
-<p id="resultsEmpty" class="empty" role="status" hidden>沒有符合條件的示範資料。</p>
-<p class="data-notice">統計數值均為虛構，非政府統計；行政區座標僅供展示。</p>
+<div class="table-scroll"><table><thead id="statisticsHead"><tr><th scope="col">#</th><th scope="col"><button type="button" data-sort="name">地區 ↕</button></th><th scope="col"><button type="button" data-sort="averageIncome">平均所得<br>（千元）↕</button></th><th scope="col"><button type="button" data-sort="hospitalCount">醫院<br>家數 ↕</button></th><th scope="col"><button type="button" data-sort="clinicCount">診所<br>家數 ↕</button></th></tr></thead><tbody id="resultRows"></tbody></table></div>
+<p id="resultsEmpty" class="empty" role="status" hidden>沒有符合條件的行政區。</p>
+<p class="data-notice">人口及醫療統計：114 年；所得統計：112 年。科別數為提供該科別的院所家數，不等同院所總數或醫師人數。</p>
 </section>
 </div>
 <section class="map-panel" aria-labelledby="mapTitle">
 <div class="panel-heading"><h2 id="mapTitle">地圖顯示</h2><span id="markerCount" class="map-count">0 個標記</span></div>
 <div class="map-wrap"><div id="map" aria-label="臺灣行政區互動地圖"></div>
 <button id="resetMap" class="map-home" type="button" title="返回臺灣全圖" aria-label="返回臺灣全圖">⌂</button>
-<div class="legend"><strong>平均所得（千元）</strong><span><i class="level-4"></i>≥ 2000</span><span><i class="level-3"></i>1800–1999</span><span><i class="level-2"></i>1600–1799</span><span><i class="level-1"></i>&lt; 1600</span></div>
+
 </div><p id="mapStatus" class="map-status" role="status" hidden></p>
 </section>
 </div>
 </main>
 </div>
-<dialog id="aboutDialog"><h2>關於本專案</h2><p>臺灣醫療資源分析系統前端雛形。所有查詢均使用示範資料，尚未連接資料庫或執行真正的 Cypher。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
+<dialog id="aboutDialog"><h2>關於本專案</h2><p>條件篩選使用 Neo4j 行政區統計。Cypher 頁籤目前僅提供範例，尚未開放任意查詢。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
 <script src="../../shared/vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script>
 </body>
 </html>

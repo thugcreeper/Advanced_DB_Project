@@ -7,6 +7,6 @@ public class LocalWebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**").allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
-                .allowedMethods("GET").allowCredentials(false);
+                .allowedMethods("GET", "POST").allowCredentials(false);
     }
 }

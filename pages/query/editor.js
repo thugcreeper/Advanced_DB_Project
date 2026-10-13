@@ -16,7 +16,7 @@ export function initializeEditor({ input, clearButton, form, status, exampleSele
       status.textContent = "目前為 UI 展示模式，尚未支援自訂 Cypher 執行"; return;
     }
     onExecute(example);
-    status.textContent = "已顯示示範資料，未執行真正的 Cypher 查詢。";
+    status.textContent = "僅顯示查詢範例，未執行 Cypher 或顯示統計結果。";
   }
   form.addEventListener("submit", (event) => { event.preventDefault(); execute(); });
   input.addEventListener("input", () => { status.textContent = ""; });
