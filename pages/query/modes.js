@@ -1,4 +1,4 @@
-export function initializeModes({ tabs, panes }) {
+export function initializeModes({ tabs, panes, onChange }) {
   function activate(mode) {
     tabs.forEach((tab) => {
       const active = tab.dataset.mode === mode;
@@ -6,6 +6,7 @@ export function initializeModes({ tabs, panes }) {
       tab.setAttribute("aria-selected", String(active));
       tab.tabIndex = active ? 0 : -1;
     });
+    onChange?.(mode);
     panes.forEach((pane) => {
       const active = pane.dataset.pane === mode;
       pane.classList.toggle("is-active", active);

@@ -3,7 +3,9 @@ import { initializeModes } from "./modes.js";
 import { initializeResults } from "./results.js";
 import { initializeStatisticsFilters } from "./statistics-filters.js?v=20261013-ui-fix";
 import { statisticsRequest } from "../../shared/statistics-api.js";
-import { initializeMap } from "../../shared/leaflet-map.js";
+import { queryCypher } from "../../shared/cypher-api.js";
+import { initializeCypherResults } from "./cypher-results.js";
+import { initializeCypherMap } from "./cypher-map.js";
 
 const get = id => document.getElementById(id);
 const columns = [
@@ -20,10 +22,20 @@ columns.forEach(column => { const th = document.createElement('th'), button = do
 get('statisticsHead').replaceChildren(header);
 const results = initializeResults({ body: get('resultRows'), count: get('resultCount'), empty: get('resultsEmpty'), download: get('downloadCsv'), sortButtons: [...header.querySelectorAll('button')], onSort: () => {}, columns });
 function status(text, error = false) { get('queryModeLabel').textContent = text; get('queryModeLabel').setAttribute('role', error ? 'alert' : 'status'); }
-function clear() { results.update([], { resetSort: true }); get('resultsEmpty').hidden = true; }
-initializeModes({ tabs: [...document.querySelectorAll('.mode-tab')], panes: [...document.querySelectorAll('.mode-pane')] });
-let filters;
-initializeEditor({ input: get('cypherInput'), clearButton: get('clearCypher'), form: get('cypherPane'), status: get('cypherStatus'), exampleSelect: get('exampleQuery'), onExecute: () => { filters?.cancel(); clear(); status('Cypher 範例未執行。'); } });
+const cypherResults = initializeCypherResults({ head: get('cypherHead'), body: get('cypherRows'), count: get('resultCount'), empty: get('resultsEmpty') });
+let filters, editor, map, mode = 'builder';
+function clear() {
+  results.update([], { resetSort: true }); cypherResults.update(); get('downloadCypherCsv').disabled = true;
+  get('resultsEmpty').hidden = true; map?.clear();
+}
+editor = initializeEditor({ input: get('cypherInput'), clearButton: get('clearCypher'), copyButton: get('copyCypher'), form: get('cypherPane'), status: get('cypherStatus'), exampleSelect: get('exampleQuery'), description: get('exampleDescription'),
+  onExecute: queryCypher,
+  onStart: () => { filters?.cancel(); clear(); status('Cypher 查詢中…'); },
+  onChange: () => { if (mode === 'cypher') { clear(); status('查詢已變更，請執行查詢。'); } },
+  onSuccess: data => { cypherResults.update(data); get('downloadCypherCsv').disabled = data.rows.length === 0; status(`Neo4j Cypher・${data.columns.length} 欄${data.truncated ? '・結果已截斷，CSV 僅含顯示資料' : ''}`); map?.update(data); },
+  onError: error => { clear(); status(error.message, true); },
+});
+get('downloadCypherCsv').addEventListener('click', () => cypherResults.download());
 filters = initializeStatisticsFilters({ form: get('builderPane'),
   options: county => statisticsRequest('/api/districts/statistics/options' + (county ? '?county=' + encodeURIComponent(county) : '')),
   request: statisticsRequest,
@@ -37,10 +49,17 @@ filters = initializeStatisticsFilters({ form: get('builderPane'),
   onError: error => { get('builderPane').setAttribute('aria-busy','false'); clear(); status(error.message, true); },
 });
 get('aboutButton').addEventListener('click', () => get('aboutDialog').showModal());
-get('cypherTab').addEventListener('click', () => { filters.cancel(); clear(); status('Cypher 範例，尚未開放任意查詢。'); });
-get('builderTab').addEventListener('click', () => filters.execute());
+initializeModes({ tabs: [...document.querySelectorAll('.mode-tab')], panes: [...document.querySelectorAll('.mode-pane')], onChange: next => {
+  if (next === mode) return;
+  mode = next; filters.cancel(); editor.cancel(); clear();
+  get('statisticsHead').closest('.table-scroll').hidden = mode === 'cypher';
+  get('cypherTable').hidden = mode !== 'cypher'; get('downloadCsv').hidden = mode === 'cypher';
+  get('downloadCypherCsv').hidden = mode !== 'cypher'; get('mapDistrictLabel').hidden = mode !== 'cypher';
+  status(mode === 'cypher' ? '尚未執行 Cypher 查詢。' : 'Neo4j 統計');
+  if (mode === 'builder') filters.execute();
+} });
 // Map failure must never affect statistics or CSV. No administrative coordinates are fabricated.
 try {
-  initializeMap({ container: get('map'), status: get('mapStatus'), homeButton: get('resetMap'), count: get('markerCount'), createMarker: () => { throw new Error('No district coordinates'); } });
+  map = initializeCypherMap({ container: get('map'), status: get('mapStatus'), homeButton: get('resetMap'), count: get('markerCount'), select: get('mapDistrict') });
   get('markerCount').textContent = '行政區定位暫緩';
 } catch { get('mapStatus').hidden = false; get('mapStatus').textContent = '地圖無法載入。'; }

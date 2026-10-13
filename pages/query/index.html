@@ -27,9 +27,11 @@
 <button id="builderTab" class="mode-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="builderPane" tabindex="-1" data-mode="builder">條件篩選</button>
 </div>
 <form id="cypherPane" class="mode-pane" hidden role="tabpanel" aria-labelledby="cypherTab" data-pane="cypher">
-<div class="panel-heading"><h2>Cypher 查詢</h2><label class="example-label">範例查詢<select id="exampleQuery" aria-label="範例查詢"></select></label></div>
-<label class="sr-only" for="cypherInput">Cypher 查詢內容</label><textarea id="cypherInput" spellcheck="false" rows="5"></textarea>
-<div class="actions"><button class="primary" type="submit">▶ 執行查詢</button><button id="clearCypher" class="secondary" type="button">清除</button></div>
+<div class="panel-heading"><h2>Cypher 查詢</h2></div>
+<label class="example-label" for="exampleQuery">範例查詢<select id="exampleQuery" aria-label="範例查詢"></select></label>
+<div id="exampleDescription" class="example-description" aria-live="polite"></div>
+<label class="sr-only" for="cypherInput">Cypher 查詢內容</label><textarea id="cypherInput" spellcheck="false" rows="12"></textarea>
+<div class="actions"><button id="executeCypher" class="primary" type="submit">執行查詢</button><button id="copyCypher" class="secondary" type="button">複製</button><button id="clearCypher" class="secondary" type="button">清除</button></div>
 <p id="cypherStatus" class="status" role="status" aria-live="polite"></p>
 </form>
 <form id="builderPane" class="mode-pane is-active" role="tabpanel" aria-labelledby="builderTab" data-pane="builder" novalidate>
@@ -108,15 +110,17 @@
 <div class="query-actions"><h3 class="action-heading">操作</h3><div class="query-commands"><button class="secondary" type="reset"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/rotate-ccw.svg#icon"></use></svg>清除條件</button><button id="searchButton" disabled class="primary" type="submit"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/search.svg#icon"></use></svg>執行篩選</button></div></div></form>
 </section>
 <section class="results-panel" aria-labelledby="resultsTitle">
-<div class="panel-heading"><h2 id="resultsTitle">查詢結果 <span class="count">（共 <b id="resultCount">0</b> 筆）</span></h2><button id="downloadCsv" class="secondary compact" type="button">↓ 下載 CSV</button></div>
+<div class="panel-heading"><h2 id="resultsTitle">查詢結果 <span class="count">（共 <b id="resultCount">0</b> 筆）</span></h2><button id="downloadCsv" class="secondary compact" type="button">↓ 下載 CSV</button><button id="downloadCypherCsv" class="secondary compact" type="button" hidden disabled>↓ 下載 CSV</button></div>
 <p id="queryModeLabel" class="result-source"></p>
 <div class="table-scroll"><table><thead id="statisticsHead"><tr><th scope="col">#</th><th scope="col"><button type="button" data-sort="name">地區 ↕</button></th><th scope="col"><button type="button" data-sort="averageIncome">平均所得<br>（千元）↕</button></th><th scope="col"><button type="button" data-sort="hospitalCount">醫院<br>家數 ↕</button></th><th scope="col"><button type="button" data-sort="clinicCount">診所<br>家數 ↕</button></th></tr></thead><tbody id="resultRows"></tbody></table></div>
-<p id="resultsEmpty" class="empty" role="status" hidden>沒有符合條件的行政區。</p>
+<div class="table-scroll" id="cypherTable" hidden><table><thead id="cypherHead"></thead><tbody id="cypherRows"></tbody></table></div>
+<p id="resultsEmpty" class="empty" role="status" hidden>沒有符合條件的資料。</p>
 <p class="data-notice">人口及醫療統計：114 年；所得統計：112 年。科別數為提供該科別的院所家數，不等同院所總數或醫師人數。</p>
 </section>
 </div>
 <section class="map-panel" aria-labelledby="mapTitle">
 <div class="panel-heading"><h2 id="mapTitle">地圖顯示</h2><span id="markerCount" class="map-count">0 個標記</span></div>
+<label class="map-district-label" hidden id="mapDistrictLabel">行政區<select id="mapDistrict" disabled aria-label="地圖行政區"></select></label>
 <div class="map-wrap"><div id="map" aria-label="臺灣行政區互動地圖"></div>
 <button id="resetMap" class="map-home" type="button" title="返回臺灣全圖" aria-label="返回臺灣全圖">⌂</button>
 
@@ -125,7 +129,7 @@
 </div>
 </main>
 </div>
-<dialog id="aboutDialog"><h2>關於本專案</h2><p>條件篩選使用 Neo4j 行政區統計。Cypher 頁籤目前僅提供範例，尚未開放任意查詢。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
+<dialog id="aboutDialog"><h2>關於本專案</h2><p>條件篩選與 Cypher 查詢使用 Neo4j 行政區統計。人口及醫療統計為 114 年，所得統計為 112 年。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
 <script src="../../shared/vendor/leaflet/leaflet.js"></script><script type="module" src="app.js?v=20261013-ui-fix"></script>
 </body>
 </html>

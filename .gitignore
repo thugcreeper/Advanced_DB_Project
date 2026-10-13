@@ -24,3 +24,4 @@
 # Generated verification screenshots and test output
 /docs/verification/artifacts/**/*.png
 /docs/verification/artifacts/**/*.tap
+/tests/cypher/artifacts/
