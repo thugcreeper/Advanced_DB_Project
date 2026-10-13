@@ -1,7 +1,7 @@
 import { initializeEditor } from "./editor.js";
 import { initializeModes } from "./modes.js";
 import { initializeResults } from "./results.js";
-import { initializeStatisticsFilters } from "./statistics-filters.js";
+import { initializeStatisticsFilters } from "./statistics-filters.js?v=20261013-ui-fix";
 import { statisticsRequest } from "../../shared/statistics-api.js";
 import { initializeMap } from "../../shared/leaflet-map.js";
 
@@ -31,8 +31,9 @@ filters = initializeStatisticsFilters({ form: get('builderPane'),
   onSuccess: data => {
     get('builderPane').setAttribute('aria-busy','false'); results.update(data.districts, { resetSort: true });
     const selected = ['personnel','specialty'].map(id => get(id).value).filter(Boolean).join('、');
-    status(`Neo4j 統計・${get('scope').selectedOptions[0].textContent}${selected ? '・' + selected : ''}`);
+    status(`Neo4j 統計・${({ all: '醫院＋診所', hospital: '醫院', clinic: '診所' })[data.scope || 'all']}${selected ? '・' + selected : ''}`);
   },
+  onChange: () => { get('builderPane').setAttribute('aria-busy','false'); clear(); status('條件已變更，請重新查詢。'); },
   onError: error => { get('builderPane').setAttribute('aria-busy','false'); clear(); status(error.message, true); },
 });
 get('aboutButton').addEventListener('click', () => get('aboutDialog').showModal());

@@ -1,0 +1,153 @@
+TAP version 13
+# Subtest: numeric sort uses 10, 100, 200 rather than string order
+ok 1 - numeric sort uses 10, 100, 200 rather than string order
+  ---
+  duration_ms: 887.3033
+  type: 'test'
+  ...
+# Subtest: empty results have a visible message and disabled export
+ok 2 - empty results have a visible message and disabled export
+  ---
+  duration_ms: 130.7777
+  type: 'test'
+  ...
+# Subtest: missing income must not display as numeric zero
+ok 3 - missing income must not display as numeric zero
+  ---
+  duration_ms: 115.4707
+  type: 'test'
+  ...
+# Subtest: CSV exports only supplied results with quote/comma/newline escaping, without coordinates
+ok 4 - CSV exports only supplied results with quote/comma/newline escaping, without coordinates
+  ---
+  duration_ms: 272.1811
+  type: 'test'
+  ...
+# Subtest: CSV neutralizes formula-leading =
+ok 5 - CSV neutralizes formula-leading =
+  ---
+  duration_ms: 156.2741
+  type: 'test'
+  ...
+# Subtest: CSV neutralizes formula-leading +
+ok 6 - CSV neutralizes formula-leading +
+  ---
+  duration_ms: 242.5888
+  type: 'test'
+  ...
+# Subtest: CSV neutralizes formula-leading -
+ok 7 - CSV neutralizes formula-leading -
+  ---
+  duration_ms: 128.5028
+  type: 'test'
+  ...
+# Subtest: CSV neutralizes formula-leading @
+ok 8 - CSV neutralizes formula-leading @
+  ---
+  duration_ms: 154.6117
+  type: 'test'
+  ...
+# Subtest: controlled multi-relationship fixture does not multiply totals (isolated Neo4j fixture environment pending)
+ok 9 - controlled multi-relationship fixture does not multiply totals (isolated Neo4j fixture environment pending) # TODO
+  ---
+  duration_ms: 0.2738
+  type: 'test'
+  ...
+# Subtest: controlled missing hospital/clinic/personnel/specialty becomes zero (isolated Neo4j fixture environment pending)
+ok 10 - controlled missing hospital/clinic/personnel/specialty becomes zero (isolated Neo4j fixture environment pending) # TODO
+  ---
+  duration_ms: 0.1305
+  type: 'test'
+  ...
+# Subtest: production API matches TC01/02/03/04 known snapshots
+ok 11 - production API matches TC01/02/03/04 known snapshots
+  ---
+  duration_ms: 688.7922
+  type: 'test'
+  ...
+# Subtest: production API matches TC05/06, without freezing zero ties
+ok 12 - production API matches TC05/06, without freezing zero ties
+  ---
+  duration_ms: 539.4564
+  type: 'test'
+  ...
+# Subtest: production TC08 snapshot retains user-specified Western doctor expectations
+not ok 13 - production TC08 snapshot retains user-specified Western doctor expectations
+  ---
+  duration_ms: 80.4166
+  type: 'test'
+  location: 'C:\\Users\\User\\Desktop\\git-repos\\Advanced_DB_Project\\tests\\statistics\\live.test.cjs:36:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    973 !== 1072
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1072
+  actual: 973
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Desktop\git-repos\Advanced_DB_Project\tests\statistics\live.test.cjs:39:57)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1389:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+  ...
+# Subtest: production doctor categories and Western rate are independent of snapshot expectations
+ok 14 - production doctor categories and Western rate are independent of snapshot expectations
+  ---
+  duration_ms: 67.9523
+  type: 'test'
+  ...
+# Subtest: production options contain real bounds and database categories
+ok 15 - production options contain real bounds and database categories
+  ---
+  duration_ms: 64.9724
+  type: 'test'
+  ...
+# Subtest: real page searches all Hsinchu districts, exports CSV and fits desktop/mobile
+ok 16 - real page searches all Hsinchu districts, exports CSV and fits desktop/mobile
+  ---
+  duration_ms: 2331.9233
+  type: 'test'
+  ...
+# Subtest: table and CSV still work if the map library fails to load
+ok 17 - table and CSV still work if the map library fails to load
+  ---
+  duration_ms: 457.2178
+  type: 'test'
+  ...
+# Subtest: failed requests clear previous results and show an error, not empty results
+ok 18 - failed requests clear previous results and show an error, not empty results
+  ---
+  duration_ms: 992.5936
+  type: 'test'
+  ...
+# Subtest: late response cannot overwrite the newest query
+ok 19 - late response cannot overwrite the newest query
+  ---
+  duration_ms: 1437.0915
+  type: 'test'
+  ...
+# Subtest: timeout has a visible message and clears rows
+ok 20 - timeout has a visible message and clears rows
+  ---
+  duration_ms: 1407.1775
+  type: 'test'
+  ...
+# Subtest: current server-side filters reset and do not retain county or income
+ok 21 - current server-side filters reset and do not retain county or income
+  ---
+  duration_ms: 1136.1551
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 18
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 2
+# duration_ms 9698.1805

@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>查詢分析｜臺灣醫療資源分析系統</title>
 <link rel="stylesheet" href="../../shared/vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css?v=20261013-ui-fix"><link rel="stylesheet" href="../../shared/hierarchical-selector.css?v=20261013-ui-fix">
 </head>
 <body>
 <header class="topbar"><strong>臺灣醫療資源分析系統</strong><button class="text-button" id="aboutButton" type="button">ⓘ 關於本專案</button></header>
@@ -32,28 +32,80 @@
 <div class="actions"><button class="primary" type="submit">▶ 執行查詢</button><button id="clearCypher" class="secondary" type="button">清除</button></div>
 <p id="cypherStatus" class="status" role="status" aria-live="polite"></p>
 </form>
-<form id="builderPane" class="mode-pane is-active" role="tabpanel" aria-labelledby="builderTab" data-pane="builder">
-<div class="panel-heading"><h2>條件篩選</h2></div>
-<div class="filter-fields">
+<form id="builderPane" class="mode-pane is-active" role="tabpanel" aria-labelledby="builderTab" data-pane="builder" novalidate>
+<section class="form-section basic-section" aria-labelledby="basicTitle">
+<h3 id="basicTitle" class="form-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/map-pin.svg#icon"></use></svg>基本條件</h3>
+<div class="basic-filter-fields">
 <label>縣市<select id="county"><option value="">全國</option></select></label>
 <label>行政區<select id="districtCode" disabled><option value="">全部行政區</option></select></label>
-<label>平均所得最低門檻（千元）<input id="minIncome" type="number" min="0" step="1" placeholder="不限"></label>
-<label>醫院家數最大值<input id="maxHospitals" type="number" min="0" step="1" placeholder="不限"></label>
-<label>診所家數最小值<input id="minClinics" type="number" min="0" step="1" placeholder="不限"></label>
+</div></section>
+<details id="advancedFilters" class="advanced-filters">
+<summary class="advanced-summary" style="list-style:none;display:flex"><span class="advanced-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/sliders-horizontal.svg#icon"></use></svg><span><span class="advanced-label">進階篩選</span><span id="advancedCount" class="filter-condition-count">尚未設定條件</span></span></span><span class="disclosure-action"><span class="when-closed">展開</span><span class="when-open">收合</span></span></summary>
+<div class="advanced-groups">
+<details class="filter-group" data-condition-group="income" open>
+<summary style="list-style:none;display:flex"><span>綜合所得</span><span class="group-condition-count"></span><span class="group-state" aria-hidden="true"><span class="when-closed">展開</span><span class="when-open">收合</span></span></summary>
+<div class="filter-fields"><label>平均所得下限（千元）<input id="minIncome" type="number" min="0" step="1" placeholder="不限"></label></div>
+</details>
+<details class="filter-group" data-condition-group="population">
+<summary style="list-style:none;display:flex"><span>人口與土地</span><span class="group-condition-count"></span><span class="group-state" aria-hidden="true"><span class="when-closed">展開</span><span class="when-open">收合</span></span></summary>
+<div class="filter-fields">
 <label>人口下限<input id="populationMin" type="number" min="0" step="1"></label>
 <label>人口上限<input id="populationMax" type="number" min="0" step="1"></label>
 <label>面積下限（平方公里）<input id="areaMin" type="number" min="0" step="any"></label>
 <label>面積上限（平方公里）<input id="areaMax" type="number" min="0" step="any"></label>
-<label>醫事人員<select id="personnel"><option value="">不限</option></select></label>
-<label>人員數下限<input id="personnelMin" type="number" min="0" step="1" disabled placeholder="不限"></label>
-<label>醫療科別<select id="specialty"><option value="">不限</option></select></label>
+</div></details>
+<details class="filter-group" data-condition-group="facilities">
+<summary style="list-style:none;display:flex"><span>醫療院所</span><span class="group-condition-count"></span><span class="group-state" aria-hidden="true"><span class="when-closed">展開</span><span class="when-open">收合</span></span></summary>
+<div class="filter-fields">
+<label>醫院家數上限<input id="maxHospitals" type="number" min="0" step="1" placeholder="不限"></label>
+<label>診所家數下限<input id="minClinics" type="number" min="0" step="1" placeholder="不限"></label>
+</div></details>
+<details class="filter-group" data-condition-group="categories">
+<summary style="list-style:none;display:flex"><span>醫療科別與醫事人員</span><span class="group-condition-count"></span><span class="group-state" aria-hidden="true"><span class="when-closed">展開</span><span class="when-open">收合</span></span></summary>
+<div class="filter-fields category-filter-fields">
+<label class="category-scope">人員／科別統計範圍<select id="scope"><option value="all">醫院＋診所</option><option value="hospital">醫院</option><option value="clinic">診所</option></select></label>
+<div class="filter-field">
+<span id="specialtyLabel">醫療科別</span>
+<div id="specialtyPicker" class="hierarchical-selector">
+<input id="specialty" type="hidden" value="">
+<div class="selector-control">
+<button id="specialtyTrigger" class="selector-trigger" type="button" disabled aria-labelledby="specialtyLabel specialtyValue" aria-haspopup="dialog" aria-expanded="false" aria-controls="specialtyPopup"><span id="specialtyValue" class="selector-value">不限</span></button>
+<button class="selector-clear" type="button" disabled title="清除醫療科別" aria-label="清除醫療科別">×</button>
+</div>
+<div id="specialtyPopup" class="selector-popup" popover="manual" role="dialog" aria-label="選擇醫療科別" hidden>
+<div class="selector-popup-heading"><strong>醫療科別</strong><button class="selector-close" type="button" title="關閉選單" aria-label="關閉醫療科別選單">×</button></div>
+<label class="sr-only" for="specialtySearch">搜尋醫療科別</label><input id="specialtySearch" class="selector-search" type="search" autocomplete="off" placeholder="搜尋醫療科別">
+<button class="selector-option selector-unlimited" type="button" data-value="" aria-label="醫療科別不限">不限</button>
+<div class="selector-groups"></div><p class="selector-empty" role="status" hidden>沒有符合的選項</p>
+</div><p class="selector-notice" role="status" hidden></p>
+</div></div>
 <label>提供所選科別的院所家數下限<input id="specialtyMin" type="number" min="0" step="1" disabled placeholder="不限"></label>
-<label>人員／科別統計範圍<select id="scope"><option value="all">醫院＋診所</option><option value="hospital">醫院</option><option value="clinic">診所</option></select></label>
+<div class="filter-field">
+<span id="personnelLabel">醫事人員</span>
+<div id="personnelPicker" class="hierarchical-selector">
+<input id="personnel" type="hidden" value="">
+<div class="selector-control">
+<button id="personnelTrigger" class="selector-trigger" type="button" disabled aria-labelledby="personnelLabel personnelValue" aria-haspopup="dialog" aria-expanded="false" aria-controls="personnelPopup"><span id="personnelValue" class="selector-value">不限</span></button>
+<button class="selector-clear" type="button" disabled title="清除醫事人員" aria-label="清除醫事人員">×</button>
+</div>
+<div id="personnelPopup" class="selector-popup" popover="manual" role="dialog" aria-label="選擇醫事人員" hidden>
+<div class="selector-popup-heading"><strong>醫事人員</strong><button class="selector-close" type="button" title="關閉選單" aria-label="關閉醫事人員選單">×</button></div>
+<label class="sr-only" for="personnelSearch">搜尋醫事人員</label><input id="personnelSearch" class="selector-search" type="search" autocomplete="off" placeholder="搜尋醫事人員">
+<button class="selector-option selector-unlimited" type="button" data-value="" aria-label="醫事人員不限">不限</button>
+<div class="selector-groups"></div><p class="selector-empty" role="status" hidden>沒有符合的選項</p>
+</div><p class="selector-notice" role="status" hidden></p>
+</div></div>
+<label>人員數下限<input id="personnelMin" type="number" min="0" step="1" disabled placeholder="不限"></label>
+</div></details>
+</div></details>
+<section class="form-section sorting-section" aria-labelledby="sortTitle">
+<h3 id="sortTitle" class="form-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/arrow-up-down.svg#icon"></use></svg>結果排序</h3>
+<div class="sorting-fields">
 <label>排序欄位<select id="sortField"><option value="income">平均所得</option><option value="population">人口</option><option value="area">面積</option><option value="hospitalCount">醫院家數</option><option value="clinicCount">診所家數</option><option value="personnel">所選人員數</option><option value="specialty">所選科別院所家數</option><option value="doctorRate">每萬人口醫師數（三類）</option><option value="westernDoctorRate">每萬人口西醫師數</option><option value="westernDoctors">西醫師合計</option><option value="chineseDoctors">中醫師合計</option><option value="dentists">牙醫師合計</option></select></label>
 <label>排序方向<select id="sortDirection"><option value="desc">由高至低</option><option value="asc">由低至高</option></select></label>
 </div>
-<div class="actions"><button id="searchButton" disabled class="primary" type="submit">執行篩選</button><button class="secondary" type="reset">重設</button></div>
-</form>
+</section>
+<div class="query-actions"><h3 class="action-heading">操作</h3><div class="query-commands"><button class="secondary" type="reset"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/rotate-ccw.svg#icon"></use></svg>清除條件</button><button id="searchButton" disabled class="primary" type="submit"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/search.svg#icon"></use></svg>執行篩選</button></div></div></form>
 </section>
 <section class="results-panel" aria-labelledby="resultsTitle">
 <div class="panel-heading"><h2 id="resultsTitle">查詢結果 <span class="count">（共 <b id="resultCount">0</b> 筆）</span></h2><button id="downloadCsv" class="secondary compact" type="button">↓ 下載 CSV</button></div>
@@ -74,6 +126,6 @@
 </main>
 </div>
 <dialog id="aboutDialog"><h2>關於本專案</h2><p>條件篩選使用 Neo4j 行政區統計。Cypher 頁籤目前僅提供範例，尚未開放任意查詢。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
-<script src="../../shared/vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script>
+<script src="../../shared/vendor/leaflet/leaflet.js"></script><script type="module" src="app.js?v=20261013-ui-fix"></script>
 </body>
 </html>

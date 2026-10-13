@@ -65,6 +65,7 @@ test('real page searches all Hsinchu districts, exports CSV and fits desktop/mob
     await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='368');
     await page.selectOption('#county','新竹市');
     await page.waitForFunction(()=>!document.getElementById('searchButton').disabled);
+    await page.locator('#advancedFilters > summary').click();
     await page.fill('#minIncome','100'); await page.click('#searchButton');
     await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='3');
     const names = await page.locator('#resultRows tr td:nth-child(2)').allTextContents();
@@ -73,7 +74,7 @@ test('real page searches all Hsinchu districts, exports CSV and fits desktop/mob
     const download=await downloadPromise; const csv=fs.readFileSync(await download.path(),'utf8');
     for (const name of names) assert.ok(csv.includes(name)); assert.ok(csv.includes('所得年度')); assert.ok(csv.includes('114'));
     assert.ok(csv.includes('西醫師合計')); assert.ok(csv.includes('每萬人口西醫師數')); assert.ok(csv.includes('中醫師合計')); assert.ok(csv.includes('牙醫師合計'));
-    const directory=path.resolve(__dirname,'../../docs/verification/artifacts/schema-update-2026-10-13'); fs.mkdirSync(directory,{recursive:true});
+    const directory=path.resolve(__dirname,'../../docs/verification/artifacts/query-ui-2026-10-13'); fs.mkdirSync(directory,{recursive:true});
     await page.screenshot({path:path.join(directory,'desktop.png'),fullPage:true});
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
@@ -130,6 +131,7 @@ test('current server-side filters reset and do not retain county or income', asy
   try {
     await page.goto(base+'/pages/query/index.html'); await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='368');
     await page.selectOption('#county','新竹市'); await page.waitForFunction(()=>!document.getElementById('searchButton').disabled);
+    await page.locator('#advancedFilters > summary').click();
     await page.fill('#minIncome','1500'); await page.click('#searchButton');
     await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='1');
     await page.locator('#builderPane button[type="reset"]').click();

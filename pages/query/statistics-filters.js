@@ -1,6 +1,26 @@
-export function initializeStatisticsFilters({ form, options, request, onStart, onSuccess, onError }) {
+import { initializeHierarchicalSelector } from "../../shared/hierarchical-selector.js?v=20261013-ui-fix";
+import { specialtyGroups, personnelGroups } from "../../shared/medical-categories.js";
+
+export function initializeStatisticsFilters({ form, options, request, onStart, onSuccess, onError, onChange = () => {} }) {
   const get = id => form.querySelector('#' + id);
   let counties = [], controller, generation = 0;
+  const pickers = {
+    personnel: initializeHierarchicalSelector({ root: get('personnelPicker'), input: get('personnel'), label: '醫事人員', groups: personnelGroups }),
+    specialty: initializeHierarchicalSelector({ root: get('specialtyPicker'), input: get('specialty'), label: '醫療科別', groups: specialtyGroups }),
+  };
+  const filterIds = new Set(['county','districtCode','minIncome','maxHospitals','minClinics','populationMin','populationMax','areaMin','areaMax','personnel','personnelMin','specialty','specialtyMin','scope','sortField','sortDirection']);
+  function syncScope() { get('scope').disabled = !get('personnel').value && !get('specialty').value; }
+  function conditionCount() {
+    let total = 0;
+    form.querySelectorAll('[data-condition-group]').forEach(group => {
+      const count = [...group.querySelectorAll('input, select')].filter(input => filterIds.has(input.id) && !input.disabled && input.value !== '' && (input.id !== 'scope' || input.value !== 'all')).length;
+      group.querySelector('.group-condition-count').textContent = count ? count + ' 項' : '';
+      total += count;
+    });
+    get('advancedCount').textContent = total ? '已設定 ' + total + ' 項條件' : '尚未設定條件';
+  }
+  get('advancedFilters').addEventListener('toggle', () => { if (!get('advancedFilters').open) Object.values(pickers).forEach(picker => picker.close()); });
+  form.querySelector('[data-condition-group="categories"]').addEventListener('toggle', event => { if (!event.target.open) Object.values(pickers).forEach(picker => picker.close()); });
   function range(min, max) {
     const low = get(min).value, high = max ? get(max).value : "";
     if (low === "" && high === "") return undefined;
@@ -13,18 +33,6 @@ export function initializeStatisticsFilters({ form, options, request, onStart, o
     for (const district of county?.districts || []) get('districtCode').append(new Option(district.name, district.code));
     get('districtCode').disabled = !county;
   }
-  function categories(select, values, common) {
-    select.replaceChildren(new Option('不限', ''));
-    const dental = ['口腔病理科','口腔顎面外科','植牙科','牙周病科','牙髓病科','牙體復形科','特殊需求者口腔醫學科','贋復補綴牙科','齒顎矯正科'];
-    const remaining = values.filter(value => !common.includes(value));
-    const family = value => value.includes('中醫') ? '中醫' : value.includes('牙') || dental.includes(value) ? '牙醫' : '其他';
-    const groups = [['常用', values.filter(value => common.includes(value))], ...['中醫','牙醫','其他'].map(label => [label + '・其他', remaining.filter(value => family(value) === label)])];
-    for (const [label, names] of groups) {
-      if (!names.length) continue;
-      const group = document.createElement('optgroup'); group.label = label;
-      names.forEach(value => group.append(new Option(value, value))); select.append(group);
-    }
-  }
   function bounds(data) {
     for (const [field, ids] of Object.entries({ population: ['populationMin','populationMax'], area: ['areaMin','areaMax'] })) {
       const limit = data.bounds[field];
@@ -36,6 +44,8 @@ export function initializeStatisticsFilters({ form, options, request, onStart, o
     if (!initial) { onError(new Error('統計選單尚未載入，請稍後再試。')); return; }
     cancel(); const current = generation;
     onStart();
+    const invalid = [...form.querySelectorAll('input, select')].find(input => !input.checkValidity());
+    if (invalid) for (let parent = invalid.parentElement; parent && parent !== form; parent = parent.parentElement) if (parent.tagName === 'DETAILS') parent.open = true;
     if (!form.reportValidity()) { onError(new Error('請確認數值範圍。')); return; }
     try {
       const scope = get('scope').value;
@@ -54,26 +64,27 @@ export function initializeStatisticsFilters({ form, options, request, onStart, o
   form.addEventListener('submit', event => { event.preventDefault(); execute(); });
   let countyGeneration = 0;
   get('county').addEventListener('change', async () => {
-    cancel(); onError(new Error('條件已變更，請重新查詢。')); districtOptions();
+    cancel(); onChange(); districtOptions();
     ['populationMin','populationMax','areaMin','areaMax'].forEach(id => { get(id).value = ''; });
     const token = ++countyGeneration; get('searchButton').disabled = true;
     try {
       const data = await options(get('county').value);
-      if (token === countyGeneration) { bounds(data); get('searchButton').disabled = false; }
+      if (token === countyGeneration) { bounds(data); conditionCount(); get('searchButton').disabled = false; }
     } catch (error) { if (token === countyGeneration) onError(error); }
   });
-  form.addEventListener('reset', () => { cancel(); countyGeneration++; setTimeout(() => { if (!initial) return; districtOptions(); bounds(initial); get('personnelMin').disabled = true; get('specialtyMin').disabled = true; get('searchButton').disabled = false; execute(); }, 0); });
-  form.addEventListener('input', () => { cancel(); onError(new Error('條件已變更，請重新查詢。')); });
-  get('personnel').addEventListener('change', () => { get('personnelMin').value = ''; get('personnelMin').disabled = !get('personnel').value; });
-  get('specialty').addEventListener('change', () => { get('specialtyMin').value = ''; get('specialtyMin').disabled = !get('specialty').value; });
+  form.addEventListener('reset', () => { cancel(); countyGeneration++; setTimeout(() => { Object.values(pickers).forEach(picker => picker.reset()); syncScope(); conditionCount(); if (!initial) return; districtOptions(); bounds(initial); get('personnelMin').disabled = true; get('specialtyMin').disabled = true; get('searchButton').disabled = false; execute(); }, 0); });
+  form.addEventListener('input', event => { if (!filterIds.has(event.target.id)) return; conditionCount(); cancel(); onChange(); });
+  form.addEventListener('change', event => { if (filterIds.has(event.target.id)) conditionCount(); });
+  get('personnel').addEventListener('change', () => { get('personnelMin').value = ''; get('personnelMin').disabled = !get('personnel').value; syncScope(); conditionCount(); });
+  get('specialty').addEventListener('change', () => { get('specialtyMin').value = ''; get('specialtyMin').disabled = !get('specialty').value; syncScope(); conditionCount(); });
   let initial;
   async function load() {
     try {
       initial = await options(''); counties = initial.counties;
       counties.forEach(county => get('county').append(new Option(county.name, county.name)));
-      categories(get('personnel'), initial.personnel, ['西醫師','中醫師','牙醫師','護理師','護士','藥師']);
-      categories(get('specialty'), initial.specialties, ['內科','外科','兒科','婦產科','家庭醫學科','牙醫一般科','中醫一般科']);
-      bounds(initial); districtOptions(); get('searchButton').disabled = false; execute();
+      pickers.personnel.setOptions(initial.personnel);
+      pickers.specialty.setOptions(initial.specialties);
+      bounds(initial); districtOptions(); syncScope(); conditionCount(); get('searchButton').disabled = false; execute();
     } catch (error) { onError(error); }
   }
   load();

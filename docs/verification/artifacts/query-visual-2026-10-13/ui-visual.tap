@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: initial page only shows basic criteria; advanced fields are collapsed
+ok 1 - initial page only shows basic criteria; advanced fields are collapsed
+  ---
+  duration_ms: 1496.2178
+  type: 'test'
+  ...
+# Subtest: all 45 specialties and 27 personnel appear exactly once in the requested group order
+ok 2 - all 45 specialties and 27 personnel appear exactly once in the requested group order
+  ---
+  duration_ms: 1257.1708
+  type: 'test'
+  ...
+# Subtest: cross-category search restores expansion, preserves query results and submits exact API names
+ok 3 - cross-category search restores expansion, preserves query results and submits exact API names
+  ---
+  duration_ms: 7609.233
+  type: 'test'
+  ...
+# Subtest: collapsing advanced criteria retains every field and exactly preserves request semantics
+ok 4 - collapsing advanced criteria retains every field and exactly preserves request semantics
+  ---
+  duration_ms: 2187.2479
+  type: 'test'
+  ...
+# Subtest: keyboard, escape, unlimited, clear and form reset work for both pickers
+ok 5 - keyboard, escape, unlimited, clear and form reset work for both pickers
+  ---
+  duration_ms: 1666.2285
+  type: 'test'
+  ...
+# Subtest: unknown API options are retained under fallback group and duplicates reported
+ok 6 - unknown API options are retained under fallback group and duplicates reported
+  ---
+  duration_ms: 1208.9698
+  type: 'test'
+  ...
+# Subtest: invalid criteria in collapsed groups are revealed instead of silently blocking submit
+ok 7 - invalid criteria in collapsed groups are revealed instead of silently blocking submit
+  ---
+  duration_ms: 1462.5466
+  type: 'test'
+  ...
+# Subtest: desktop/mobile popup remains within viewport with scrolling and no page errors
+ok 8 - desktop/mobile popup remains within viewport with scrolling and no page errors
+  ---
+  duration_ms: 4228.2478
+  type: 'test'
+  ...
+# Subtest: default, expanded and picker layout is aligned and non-overflowing on desktop and narrow screens
+ok 9 - default, expanded and picker layout is aligned and non-overflowing on desktop and narrow screens
+  ---
+  duration_ms: 5896.357
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 21597.44
