@@ -1,7 +1,6 @@
 # Local source datasets (not frontend assets)
-/data/medicalFacilities.json
-/data/pharmacy.json
-
+/data/*.csv
+/data/*.json
 # Local secrets and credentials
 .env
 .env.*
@@ -21,3 +20,7 @@
 .classpath
 .project
 .settings/
+
+# Generated verification screenshots and test output
+/docs/verification/artifacts/**/*.png
+/docs/verification/artifacts/**/*.tap

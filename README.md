@@ -3,7 +3,7 @@
 原生 HTML、CSS、JavaScript ES Modules 前端雛形，僅實作查詢分析。
 前端仍使用示範查詢；後端提供健康檢查及雙擊執行的院所 JSON／Neo4j 匯入腳本，尚未串接院所查詢 API。
 ## 前端本地端測試環境
-http://127.0.0.1:18081/pages/district/index.html
+http://127.0.0.1:18080/pages/district/index.html
 ## 後端
 
 `backend/` 使用 Spring Boot、Java 17、Maven Wrapper，採 `model / service / controller`
