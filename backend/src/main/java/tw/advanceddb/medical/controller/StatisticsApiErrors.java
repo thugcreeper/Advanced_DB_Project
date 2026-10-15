@@ -14,10 +14,12 @@ public class StatisticsApiErrors {
     }
     @ExceptionHandler({Neo4jException.class,IllegalStateException.class,io.github.cdimascio.dotenv.DotenvException.class})
     public ResponseEntity<Map<String,String>> unavailable(Exception exception) {
+        DatabaseDiagnostics.log(exception);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("code","DATABASE_UNAVAILABLE","message","統計資料庫無法連線或查詢逾時，請稍後重試。"));
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String,String>> failed(Exception exception) {
+        DatabaseDiagnostics.log(exception);
         return ResponseEntity.internalServerError().body(Map.of("code","QUERY_FAILED","message","統計查詢失敗，請稍後重試。"));
     }
 }

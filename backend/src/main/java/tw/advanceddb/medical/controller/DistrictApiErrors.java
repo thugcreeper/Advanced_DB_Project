@@ -17,10 +17,12 @@ public class DistrictApiErrors {
     }
     @ExceptionHandler({Neo4jException.class, IllegalStateException.class, io.github.cdimascio.dotenv.DotenvException.class})
     public ResponseEntity<Map<String, String>> unavailable(Exception exception) {
+        DatabaseDiagnostics.log(exception);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("code", "DATABASE_UNAVAILABLE", "message", "資料服務異常，請稍後再試。"));
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> failed(Exception exception) {
+        DatabaseDiagnostics.log(exception);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("code", "QUERY_FAILED", "message", "院所查詢失敗，請稍後重試。"));
     }
 }

@@ -17,6 +17,7 @@ public class CypherApiErrors {
     public ResponseEntity<Map<String,String>> rejected(Rejected error) { return reply(403, "READ_ONLY", error.getMessage()); }
     @ExceptionHandler(Neo4jException.class)
     public ResponseEntity<Map<String,String>> database(Neo4jException error) {
+        DatabaseDiagnostics.log(error);
         String code = error.code();
         if (code.contains("Unauthorized") || code.contains("Authentication") || code.contains("CredentialsExpired"))
             return reply(503, "DATABASE_UNAVAILABLE", "資料服務異常，請稍後再試。");
@@ -26,7 +27,7 @@ public class CypherApiErrors {
         return reply(503, "DATABASE_UNAVAILABLE", "查詢服務暫時無法使用，請稍後重試。");
     }
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String,String>> failed(Exception error) { return reply(503, "QUERY_FAILED", "查詢服務暫時無法使用，請稍後重試。"); }
+    public ResponseEntity<Map<String,String>> failed(Exception error) { DatabaseDiagnostics.log(error); return reply(503, "QUERY_FAILED", "查詢服務暫時無法使用，請稍後重試。"); }
     private ResponseEntity<Map<String,String>> reply(int status, String code, String message) {
         return ResponseEntity.status(status).body(Map.of("code", code, "message", message));
     }
