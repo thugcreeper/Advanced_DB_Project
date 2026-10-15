@@ -1,4 +1,5 @@
 # 臺灣醫療資源分析系統
+URL:https://thugcreeper.github.io/Advanced_DB_Project/pages/query/index.html
 
 Java 17、Spring Boot 與 Neo4j AuraDB 的醫療資源查詢專案。
 
