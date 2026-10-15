@@ -1,6 +1,8 @@
 # 臺灣醫療資源分析系統
 
-Java 17、Spring Boot 與 Neo4j 的本機醫療資源查詢專案。
+Java 17、Spring Boot 與 Neo4j AuraDB 的醫療資源查詢專案。
+
+[AuraDB 連線、共用重連與 Render 部署設定](docs/specs/auradb-render.md)。
 
 ## 啟動
 
@@ -11,7 +13,7 @@ Java 17、Spring Boot 與 Neo4j 的本機醫療資源查詢專案。
 [資料介紹](http://127.0.0.1:18080/pages/data/index.html)。
 
 Spring Boot 同時提供 HTML、CSS、JavaScript 及 API，不需另開前端服務。
-在 `backend/.env` 明確設定 `NEO4J_DATABASE=neo4j`，統計、院所與 Cypher 共用此設定；修改設定後重啟服務。
+在 `backend/.env` 明確設定 `NEO4J_DATABASE=<實際資料庫名稱>`，統計、院所與 Cypher 共用此設定；修改設定後重啟服務。
 前端 API 預設同來源；分離部署須明確設定 `api-base`，不再有 8010 連接埠特例。
 前端修改後執行 Maven `resources:resources`；Java 修改後重新建置並重新啟動程式。
 不要以 `file://` 開 HTML。靜態網站部署不會執行 Java API，完整查詢使用本機 Spring Boot。
@@ -29,7 +31,7 @@ Spring Boot 同時提供 HTML、CSS、JavaScript 及 API，不需另開前端服
 
 ## 本機資料庫整合
 
-網站現在統一讀取 `neo4j`：保留政府統計，新增 `醫療院所`、`HAS_FACILITY`、`HAS_DEPARTMENT`，共用 `科別`。
+網站連線至 AuraDB，查詢資料庫由 `NEO4J_DATABASE` 明確指定（以實際資料庫查詢結果為準）：保留政府統計，新增 `醫療院所`、`HAS_FACILITY`、`HAS_DEPARTMENT`，共用 `科別`。
 科別統計使用 `RECORD_DEPARTMENT`。來源 `medicalfacilities` 原有資料完全保留，整合不修改來源。
 一次性整合已完成，搬移工具與其專用測試已移除；網站不會自動執行遷移。
 

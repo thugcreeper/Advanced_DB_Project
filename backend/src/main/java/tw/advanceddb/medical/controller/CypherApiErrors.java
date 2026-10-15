@@ -18,6 +18,8 @@ public class CypherApiErrors {
     @ExceptionHandler(Neo4jException.class)
     public ResponseEntity<Map<String,String>> database(Neo4jException error) {
         String code = error.code();
+        if (code.contains("Unauthorized") || code.contains("Authentication") || code.contains("CredentialsExpired"))
+            return reply(503, "DATABASE_UNAVAILABLE", "資料服務異常，請稍後再試。");
         if (code.contains("TimedOut") || code.contains("Timeout")) return reply(408, "QUERY_TIMEOUT", "查詢超過 15 秒，請縮小查詢範圍後重試。");
         if (code.contains("Security") || code.contains("AccessMode")) return reply(403, "QUERY_FORBIDDEN", "沒有執行此唯讀查詢的權限。");
         if (code.contains("Statement")) return reply(400, "QUERY_SYNTAX", "Cypher 語法、欄位型別或參數有誤，請檢查查詢內容。");

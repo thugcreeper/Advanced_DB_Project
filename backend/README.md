@@ -4,12 +4,14 @@ Java 17、Spring Boot 3.5.16，使用 Neo4j Java Driver 5.28.13。
 以 VS Code 開啟 `pom.xml`，等待 Maven 依賴載入，再執行
 `src/main/java/tw/advanceddb/medical/MedicalResourceApplication.java`。
 預設為 `http://127.0.0.1:18080/`，健康檢查為 `/api/health`。
-此健康檢查目前只代表 HTTP 程式存活，databaseConnected 固定為 false；資料庫連線以實際 API 查詢結果判定。
+此健康檢查只代表 HTTP 程式存活，不查資料庫，也不再回傳 databaseConnected 占位。
+完整連線、重連與部署說明見 [AuraDB / Render 設定](../docs/specs/auradb-render.md)。
 
 ## 設定與服務
 
-在 `.env` 設定本機 `NEO4J_URI`、`NEO4J_USERNAME`、`NEO4J_PASSWORD`、`NEO4J_DATABASE=neo4j`。
-統計、院所搜尋／詳情與 Cypher 全部由同一份 `Neo4jConnection` 取得資料庫名稱，不再各自硬編碼或忽略舊值。這個設定會真正決定查詢的資料庫，正式環境請維持 `neo4j`。
+在 `.env` 設定 `AURA_CONNECTION_URI`、`AURA_PASSWD`、`NEO4J_USERNAME=<實際登入帳號>`、`NEO4J_DATABASE=<實際資料庫名稱>`。
+URI 使用 `neo4j+s://`。程序環境可提供 NEO4J_URI／NEO4J_PASSWORD；dotenv 中 Aura 設定優先於舊本機值。
+統計、院所搜尋／詳情與 Cypher 全部由同一份 `Neo4jConnection` 取得資料庫名稱，不再各自硬編碼或忽略舊值。這個設定會真正決定查詢的資料庫，正式環境請填入 Aura 實際資料庫名稱。
 `NEO4J_DATABASE` 必須明確設定；缺少時回報設定錯誤。修改 `.env` 後須重啟 Spring Boot。
 密碼與完整 `.env` 不放入文件、終端輸出或 Git。
 

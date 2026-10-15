@@ -41,10 +41,6 @@
       <resource><directory>../pages</directory><targetPath>static/pages</targetPath></resource>
       <resource><directory>../shared</directory><targetPath>static/shared</targetPath></resource>
       <resource><directory>src/main/resources</directory></resource>
-      <resource>
-        <directory>../data</directory><targetPath>districts</targetPath>
-        <includes><include>行政區與代碼.csv</include></includes>
-      </resource>
     </resources>
     <plugins>
       <plugin>

@@ -17,7 +17,7 @@ public class DistrictApiErrors {
     }
     @ExceptionHandler({Neo4jException.class, IllegalStateException.class, io.github.cdimascio.dotenv.DotenvException.class})
     public ResponseEntity<Map<String, String>> unavailable(Exception exception) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("code", "DATABASE_UNAVAILABLE", "message", "Neo4j 無法連線或設定有誤，請確認資料庫已啟動。"));
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("code", "DATABASE_UNAVAILABLE", "message", "資料服務異常，請稍後再試。"));
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> failed(Exception exception) {

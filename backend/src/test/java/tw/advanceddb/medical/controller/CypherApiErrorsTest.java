@@ -5,6 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.neo4j.driver.exceptions.ClientException;
 
 class CypherApiErrorsTest {
+    @Test void backendDatabaseCredentialsAreAServiceFailureRatherThanUserPermission() {
+        var reply = new CypherApiErrors().database(new ClientException("Neo.ClientError.Security.Unauthorized", "secret"));
+        assertThat(reply.getStatusCode().value()).isEqualTo(503);
+        assertThat(reply.getBody().get("code")).isEqualTo("DATABASE_UNAVAILABLE");
+        assertThat(reply.getBody().get("message")).doesNotContain("secret");
+    }
     @Test void hidesDriverDetailsInSyntaxErrors() {
         var reply = new CypherApiErrors().database(new ClientException("Neo.ClientError.Statement.SyntaxError", "password secret bolt://server C:\\private"));
         assertThat(reply.getStatusCode().value()).isEqualTo(400);

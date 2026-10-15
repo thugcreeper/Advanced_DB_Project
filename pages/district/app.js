@@ -87,10 +87,11 @@ form.addEventListener("submit", async event => {
   currentRequest?.abort();
   currentRequest = new AbortController();
   const version = ++requestNumber;
-  clearResults("搜尋中…");
+  status.textContent = "搜尋中…";
+  status.classList.remove("is-error");
   search.disabled = true;
   search.textContent = "搜尋中…";
-  get("totalCount").textContent = "—";
+  // Preserve the map and previous results while reconnecting.
   get("resultsTitle").closest("section").setAttribute("aria-busy", "true");
   try {
     const parameters = new URLSearchParams({ county: county.value, districtCode: district.value, type: type.value, department: department.value });

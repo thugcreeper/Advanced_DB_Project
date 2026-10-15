@@ -17,7 +17,7 @@ import tw.advanceddb.medical.controller.DistrictStatisticsController;
 import tw.advanceddb.medical.repository.DistrictStatisticsRepository;
 import tw.advanceddb.medical.service.*;
 
-@WebMvcTest(DistrictStatisticsController.class)
+@WebMvcTest(value=DistrictStatisticsController.class, properties="app.cors.allowed-origins=http://127.0.0.1:5500")
 @Import({DistrictCatalog.class,DistrictStatisticsService.class})
 class StatisticsApiContractTest {
     @Autowired MockMvc mvc;
@@ -52,6 +52,10 @@ class StatisticsApiContractTest {
     @Test void invalidInputsFailBeforeReadingDatabase() throws Exception {
         for (String body:List.of("{\"population\":{\"min\":20000,\"max\":100}}","{\"population\":{\"min\":-1}}","{\"population\":{\"min\":0.5}}","{\"income\":{\"min\":\"bad\"}}","{\"sort\":[{\"field\":\"DELETE\",\"direction\":\"asc\"}]}")) search(body).andExpect(status().isBadRequest());
         verify(repository,never()).rows(anyString(),anyString(),anyString());
+    }
+    @Test void unlistedOriginIsRejected() throws Exception {
+        mvc.perform(options("/api/districts/statistics/search").header("Origin","https://untrusted.example")
+            .header("Access-Control-Request-Method","POST")).andExpect(status().isForbidden());
     }
     @Test void localFrontendMayPreflightPostSearch() throws Exception {
         mvc.perform(options("/api/districts/statistics/search").header("Origin","http://127.0.0.1:5500")

@@ -13,15 +13,18 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 class HealthEndpointTest {
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private tw.advanceddb.medical.config.Neo4jConnection connection;
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void startsWithoutDatabaseCredentialsAndReportsDisconnected() throws Exception {
+    void reportsHttpLivenessWithoutDatabaseProbe() throws Exception {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"))
-                .andExpect(jsonPath("$.databaseConnected").value(false));
+                .andExpect(jsonPath("$.databaseConnected").doesNotExist());
+        org.mockito.Mockito.verifyNoInteractions(connection);
     }
 
     @Test

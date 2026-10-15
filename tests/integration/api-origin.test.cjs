@@ -14,6 +14,8 @@ for(const [file,kind] of [['api.js','facility'],['statistics-api.js','statistics
         await page.route('**/*',route=>{
           const request=route.request(),url=new URL(request.url());
           if(url.pathname==='/')return route.fulfill({contentType:'text/html',body:`<meta name="api-base" content="${configured}">`});
+          if(url.pathname==='/api-connection.js')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(path.join(__dirname,'../../shared/api-connection.js'),'utf8')});
+          if(url.pathname==='/api/health')return route.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"status":"UP"}'});
           if(url.pathname==='/module.js')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(path.join(__dirname,'../../shared',file),'utf8')});
           if(request.resourceType()==='fetch'&&request.method()!=='OPTIONS')requests.push(request.url());
           return route.fulfill({status:200,headers:{'content-type':'application/json','access-control-allow-origin':'*','access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':'Content-Type, Accept'},body:JSON.stringify(kind==='cypher'?{columns:[],rows:[]}:{ok:true})});

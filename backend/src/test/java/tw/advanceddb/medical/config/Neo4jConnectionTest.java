@@ -6,6 +6,16 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.Test;
 
 class Neo4jConnectionTest {
+    @Test void auraAliasUsesEncryptionAndRejectsLocalBolt() {
+        var settings = mock(Dotenv.class);
+        when(settings.get("AURA_CONNECTION_URI")).thenReturn("neo4j+s://example.databases.neo4j.io");
+        assertThat(Neo4jConnection.connectionUri(settings)).startsWith("neo4j+s://");
+        when(settings.get("NEO4J_URI")).thenReturn("bolt://localhost:7687");
+        assertThat(Neo4jConnection.connectionUri(settings)).startsWith("neo4j+s://");
+        when(settings.get("AURA_CONNECTION_URI")).thenReturn(null);
+        assertThatThrownBy(() -> Neo4jConnection.connectionUri(settings)).isInstanceOf(IllegalStateException.class);
+    }
+
     @Test void databaseComesFromExplicitSettingWithoutAHardcodedFallback() {
         var settings = mock(Dotenv.class);
         when(settings.get("NEO4J_DATABASE")).thenReturn("configured_database");
