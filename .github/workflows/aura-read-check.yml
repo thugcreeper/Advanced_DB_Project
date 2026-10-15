@@ -1,0 +1,55 @@
+name: Aura daily read check
+
+on:
+  schedule:
+    # 04:00 UTC = 12:00 Asia/Taipei; GitHub may delay scheduled runs.
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aura-daily-read-check
+  cancel-in-progress: false
+
+jobs:
+  read-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Neo4j driver
+        run: python -m pip install --disable-pip-version-check neo4j==6.4.0
+      - name: Read one facility from Aura
+        env:
+          AURA_CONNECTION_URI: ${{ secrets.AURA_CONNECTION_URI }}
+          AURA_PASSWD: ${{ secrets.AURA_PASSWD }}
+          NEO4J_USERNAME: ${{ secrets.NEO4J_USERNAME }}
+          NEO4J_DATABASE: ${{ secrets.NEO4J_DATABASE }}
+        run: python scripts/aura_read_check.py
+
+  notify-failure:
+    needs: read-check
+    if: ${{ always() && needs.read-check.result == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Email failed check
+        timeout-minutes: 1
+        env:
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          NOTIFY_TO: nhpss100032@gmail.com
+        run: python scripts/notify_aura_failure.py

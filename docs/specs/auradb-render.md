@@ -132,7 +132,7 @@ CORS 預設不開放跨域，拒絕 wildcard；此 Spring 設定由程序環境�
 ```
 
 重新發布 GitHub Pages，並確認 Render 的 CORS_ALLOWED_ORIGINS 與實際 Pages 來源一致。
-前端設定只放後端 HTTP 網址，不放任何 Neo4j URI、帳號或密碼；目前尚未有正式 Render 網址，因此本次不修改前端 api-base。
+前端設定只放後端 HTTP 網址，不放任何 Neo4j URI、帳號或密碼；目前正式 Render 網址為 https://advanced-db-project-s6bd.onrender.com，district 與 query 兩頁已明確設定此 api-base；因此本機開啟這兩頁也會使用正式後端，若要測試本機 API，請暫時將 meta content 清空。
 若直接使用 Render 提供的前端頁面，api-base 留空即可使用同來源 API。
 
 Render 若採會休眠的方案，首次 HTML 尚未送達時無法執行 JavaScript 提示；GitHub Pages 與後端分離後，頁面可先顯示，再透過共用連線 gate 等待後端恢復。
@@ -163,3 +163,33 @@ Aura opt-in 唯讀測試：在 backend 目錄設定 AURA_READ_TESTS=true，再�
 真實 stop/start：node --test tests/integration/connection-live.test.cjs（需已打包 JAR、Java 17，使用測試埠 18090、19190）。
 測試需 NODE_PATH 指向有 playwright 的安裝，PLAYWRIGHT_EXECUTABLE 可指定現有 Chromium。
 狀態測試縮短時間以覆蓋 90 秒停止邏輯；真實 stop/start 測試使用正式時間設定。
+
+## Aura 每日唯讀檢查（GitHub Actions）
+
+`.github/workflows/aura-read-check.yml` 每天 UTC 04:00（臺灣 12:00）直接連線 Aura，不經過 Render，也可從 Actions 手動 Run workflow。
+使用固定版本的官方 Python Driver，唯讀讀取一筆醫療院所並確認 sourceId 存在；沒有寫入、Schema、匯入或自動恢復操作。
+連線逾時 5 秒、取得連線上限 10 秒、交易逾時 10 秒；最多三次嘗試，暫時性錯誤等待 5、15 秒。驗證失敗不重試；整個 job 上限 5 分鐘。
+紀錄僅顯示固定成功／失敗訊息，不列印 URI、帳號、密碼或原始例外。
+
+啟用方式：
+
+1. 在 GitHub repo → Settings → Secrets and variables → Actions → New repository secret，新增 `AURA_CONNECTION_URI`、`AURA_PASSWD`、`NEO4J_USERNAME`、`NEO4J_DATABASE`。值使用目前已驗證的設定，不要上傳 .env。
+2. 將 workflow 與 scripts/aura_read_check.py 推送至預設分支；本機新增檔案不會啟用雲端排程。
+3. Actions → Aura daily read check → Run workflow，確認首次執行成功。
+4. 另外新增 repository Secrets：`SMTP_USERNAME`（寄件 Gmail 完整地址）、`SMTP_PASSWORD`（該帳號的 Google 應用程式密碼，非一般登入密碼）。read-check job 失敗時，獨立的 notify-failure job 透過 Gmail SMTP SSL 寄到 `nhpss100032@gmail.com`；成功或取消時不寄信。信內只有固定說明與 Actions run 連結，不包含資料庫設定或原始錯誤。寄送失敗會明確標示通知 job 失敗；GitHub 原生 Actions 失敗通知可另行開啟。
+
+本機驗證也可在注入上述四個程序環境變數後執行 `python scripts/aura_read_check.py`；腳本不自行讀取 .env，以避免誤載入本機舊設定。
+
+此排程是連線與資料檢查，不能保證免費方案永不暫停，也不能取代備份。官方人員曾表示每日查詢可保持活動，但目前文件未完整承諾各類唯讀查詢的活動判定。
+AuraDB Free 目前在 72 小時無活動後暫停，暫停超過 30 天會刪除；已暫停時普通查詢不會代替 Console／管理 API 的恢復操作。
+HTTP `/api/health` 不查詢 Aura，不能作為資料庫活動證明。
+GitHub 排程可能延遲或漏跑；公開 repo 連續 60 天沒有 repo 活動會自動停用排程。請留意排程最後成功時間、Aura 通知及 Console 狀態，另外保留可還原的獨立備份；目前沒有新增自動備份或自動恢復功能。
+
+參考：[Aura 暫停與刪除](https://neo4j.com/docs/aura/managing-instances/instance-actions/)、[每日查詢活動說明](https://feedback.neo4j.com/aura-general/p/aura-free-instance-pause-change)、[GitHub schedule 限制](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)。
+
+### Gmail 失敗通知設定
+
+寄件帳號可以與收件帳號相同，但必須是你能管理的 Gmail 帳號。Google 應用程式密碼需要先啟用兩步驟驗證；部分組織／受保護帳號無此選項。請只在 GitHub Secrets 填入，不放進 .env、workflow 或聊天。
+設定方式見 [Google 應用程式密碼說明](https://support.google.com/accounts/answer/185833)。SMTP_USERNAME／SMTP_PASSWORD 不需要加入 Render。
+目前未配置雲端寄信 Secrets、未實際寄信；本機僅以模擬 SMTP 驗證成功、缺設定與失敗流程。Actions 推送與 Secrets 完成後，需再確認真實失敗通知收件情況。
+每日 12:00 是排程目標時間，GitHub 排程可能延遲，不保證準點寄送或執行。

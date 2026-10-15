@@ -16,7 +16,7 @@ Spring Boot 同時提供 HTML、CSS、JavaScript 及 API，不需另開前端服
 在 `backend/.env` 明確設定 `NEO4J_DATABASE=<實際資料庫名稱>`，統計、院所與 Cypher 共用此設定；修改設定後重啟服務。
 前端 API 預設同來源；分離部署須明確設定 `api-base`，不再有 8010 連接埠特例。
 前端修改後執行 Maven `resources:resources`；Java 修改後重新建置並重新啟動程式。
-不要以 `file://` 開 HTML。靜態網站部署不會執行 Java API，完整查詢使用本機 Spring Boot。
+不要以 `file://` 開 HTML。靜態網站部署不會執行 Java API，完整查詢需連接本機或 Render 上的 Spring Boot。
 
 ## 目前功能
 
@@ -54,3 +54,9 @@ cd backend
 其餘 frontend／live／Playwright 測試見 `tests/`；整合測試依賴本機保留的歷史稽核快照，不隨 Git 提供。
 
 地圖使用 Leaflet 與 OpenStreetMap，保留圖磚來源標示；圖磚受網路與服務可用性影響。
+
+## 服務健康與 Aura 定期檢查
+
+後端 HTTP 健康檢查：[Render 健康檢查](https://advanced-db-project-s6bd.onrender.com/api/health)，本機為 http://127.0.0.1:18080/api/health。此端點不查詢資料庫；實際資料服務可用 `/api/facilities/departments` 驗證。正式後端：https://advanced-db-project-s6bd.onrender.com。
+
+[每日 Aura 唯讀檢查設定](docs/specs/auradb-render.md#aura-每日唯讀檢查github-actions)：GitHub Actions 每天臺灣時間 12:00 直接查詢 Aura，需先設定四個 repository Secrets 並推送至預設分支。排程不能取代備份，也不保證免費方案不暫停；公開 repo 的排程另有 60 天無 repo 活動自動停用限制。
