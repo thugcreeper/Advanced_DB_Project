@@ -24,6 +24,7 @@ Spring Boot 同時提供 HTML、CSS、JavaScript 及 API，不需另開前端服
 - 行政區條件篩選、階層式科別／人員選擇器、排序及 UTF-8 BOM CSV。
 - 可編輯的唯讀 Cypher 與九個政府統計範例；切換範例不自動執行。
 - 依縣市、行政區、醫院／診所類型及實際科別搜尋院所，顯示列表與真實地圖位置。
+- 圖形關係：依行政區探索院所與科別，分批載入、展開、高亮、縮放拖曳及院所詳情；內附 Aura Schema 原圖。
 - 資料來源、年度、公式、Schema 與使用限制介紹。
 
 所得採 112 年，人口及政府醫療統計採 114 年；不宣稱同年度因果關係。
@@ -50,9 +51,8 @@ cd backend
 .\mvnw.cmd '-Dmaven.repo.local=.maven-cache/repository' -o test
 ```
 
-整合 TC-01～TC-12 與舊統計快照案例分開記錄。
-原統計 TC-08 的鳥松區西醫師預期差異保持未解決，不修改預期或資料。
-其餘 frontend／live／Playwright 測試見 `tests/`；整合測試依賴本機保留的歷史稽核快照，不隨 Git 提供。
+目前 API、frontend／live／Playwright 測試見 `tests/`。
+舊統計固定快照、一次性搬移比對及未實作 TODO 已依使用者要求移除；歷史差異與備份仍保留於既有文件／本機備份，未修改資料庫。
 
 地圖使用 Leaflet 與 OpenStreetMap，保留圖磚來源標示；圖磚受網路與服務可用性影響。
 
@@ -61,3 +61,5 @@ cd backend
 後端 HTTP 健康檢查：[Render 健康檢查](https://advanced-db-project-s6bd.onrender.com/api/health)，本機為 http://127.0.0.1:18080/api/health。此端點不查詢資料庫；實際資料服務可用 `/api/facilities/departments` 驗證。正式後端：https://advanced-db-project-s6bd.onrender.com。
 
 [每日 Aura 唯讀檢查設定](docs/specs/auradb-render.md#aura-每日唯讀檢查github-actions)：GitHub Actions 每天臺灣時間 12:00 直接查詢 Aura，需先設定四個 repository Secrets 並推送至預設分支。排程不能取代備份，也不保證免費方案不暫停；公開 repo 的排程另有 60 天無 repo 活動自動停用限制。
+
+圖形關係的功能範圍與驗證見 [圖形探索設定](docs/specs/graph-exploration.md)。

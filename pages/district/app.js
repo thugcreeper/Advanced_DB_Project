@@ -1,3 +1,4 @@
+import { showSnackbar } from '../../shared/snackbar.js';
 import { request } from "../../shared/api.js";
 import { initializeFacilityMap, hasLocation } from "./map.js";
 import { renderResults } from "./results.js";
@@ -54,6 +55,7 @@ async function loadCatalog() {
     county.disabled = false;
   } catch (error) {
     county.replaceChildren(new Option("縣市載入失敗", ""));
+    showSnackbar("行政區選項載入失敗，請按重新載入。", {error:true});
     get("catalogError").textContent = error.message;
     get("catalogError").hidden = false;
     get("retryCatalog").hidden = false;
@@ -77,9 +79,9 @@ department.addEventListener('change',invalidate);
 async function loadDepartments() {
   try {
     const values=await request('/api/facilities/departments');
-    department.replaceChildren(new Option('不限',''),...values.map(value=>new Option(value,value)));
+    const selected=department.value;department.replaceChildren(new Option('不限',''),...values.map(value=>new Option(value,value)));department.value=values.includes(selected)?selected:'';get('departmentCatalogStatus').hidden=true;retryDepartments.hidden=true;
     department.disabled=false;
-  } catch { get('departmentCatalogStatus').hidden=false; get('departmentCatalogStatus').textContent='院所科別暫時無法載入，仍可依行政區搜尋。'; }
+  } catch { retryDepartments.hidden=false;showSnackbar('科別選項載入失敗，仍可依行政區搜尋。',{error:true});get('departmentCatalogStatus').hidden=false; get('departmentCatalogStatus').textContent='院所科別暫時無法載入，仍可依行政區搜尋。'; }
 }
 form.addEventListener("submit", async event => {
   event.preventDefault();
@@ -104,12 +106,15 @@ form.addEventListener("submit", async event => {
     get("totalCount").textContent = `共 ${result.total.toLocaleString()} 筆`;
     status.textContent = result.total ? `${result.county}${result.district || '・全部行政區'}・${type.selectedOptions[0].textContent}${result.department ? '・'+result.department : ''}`
       : result.districtCode ? "此行政區沒有符合條件的醫療院所" : "此縣市沒有符合條件的醫療院所";
+    const area=result.county+(result.district||'全部行政區');
+    showSnackbar(result.total?`${area}：找到 ${result.total} 間符合院所。`:`目前資料中，${area}沒有符合條件的${type.value==='hospital'?'醫院':type.value==='clinic'?'診所':'院所'}。`);
     get("locationNotice").textContent = `無法定位 ${result.unlocatedCount} 筆院所（缺少有效座標或座標待複核），仍計入結果總數。`;
     get("locationNotice").hidden = result.unlocatedCount === 0;
     get("assignmentNotice").textContent = `全國有 ${result.unassignedTotal} 筆醫院或診所無法確定行政區歸屬，未分配至搜尋地區。`;
     get("assignmentNotice").hidden = result.unassignedTotal === 0;
   } catch (error) {
     if (error.name === "AbortError" || version !== requestNumber) return;
+    showSnackbar("院所查詢失敗，請按搜尋重試。", {error:true});
     get("totalCount").textContent = "查詢失敗";
     status.textContent = error.message;
     status.classList.add("is-error");
@@ -123,5 +128,6 @@ form.addEventListener("submit", async event => {
 });
 get("retryCatalog").addEventListener("click", loadCatalog);
 get("aboutButton").addEventListener("click", () => get("aboutDialog").showModal());
+const retryDepartments=document.createElement('button');retryDepartments.className='secondary';retryDepartments.type='button';retryDepartments.textContent='重新載入科別';retryDepartments.hidden=true;get('departmentCatalogStatus').after(retryDepartments);retryDepartments.addEventListener('click',()=>{retryDepartments.hidden=true;loadDepartments();});
 loadCatalog();
 loadDepartments();

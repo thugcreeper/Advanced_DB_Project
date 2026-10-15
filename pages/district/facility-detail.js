@@ -1,3 +1,4 @@
+import { showSnackbar } from '../../shared/snackbar.js';
 import { request } from "../../shared/api.js";
 import { createIcon } from "../../shared/ui-icons.js";
 import { hasLocation } from "./map.js";
@@ -86,7 +87,7 @@ export function createFacilityDetail({ onLocate, onClose }) {
       render(data); content.hidden = false; status.textContent = ""; status.hidden = true;
     } catch (error) {
       if (error.name === "AbortError" || token !== version) return;
-      status.textContent = error.message; status.classList.add("is-error"); retry.hidden = false;
+      showSnackbar("院所詳情載入失敗，請在詳情面板重試。",{error:true});status.textContent = error.message; status.classList.add("is-error"); retry.hidden = false;
     } finally {
       if (token === version) panel.setAttribute("aria-busy", "false");
     }

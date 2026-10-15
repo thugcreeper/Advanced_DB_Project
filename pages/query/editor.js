@@ -1,3 +1,4 @@
+import { showSnackbar } from '../../shared/snackbar.js';
 import { examples } from "./examples.js";
 export function initializeEditor({ input, clearButton, form, status, exampleSelect, description, copyButton, onExecute, onChange, onStart, onSuccess, onError }) {
   let controller, revision = 0;
@@ -25,7 +26,7 @@ export function initializeEditor({ input, clearButton, form, status, exampleSele
   exampleSelect.addEventListener("change", loadExample);
   async function execute() {
     if (controller) return;
-    if (!input.value.trim()) { status.textContent = '請輸入 Cypher 查詢。'; input.focus(); return; }
+    if (!input.value.trim()) { showSnackbar('請輸入 Cypher 查詢。');status.textContent = '請輸入 Cypher 查詢。'; input.focus(); return; }
     controller = new AbortController(); const current = ++revision;
     submit.disabled = true; submit.textContent = '查詢中…'; form.setAttribute('aria-busy', 'true');
     status.setAttribute('role', 'status'); status.textContent = '查詢中…'; onStart?.();
@@ -44,8 +45,8 @@ export function initializeEditor({ input, clearButton, form, status, exampleSele
   form.addEventListener("submit", (event) => { event.preventDefault(); execute(); });
   input.addEventListener("input", () => { cancel(); status.textContent = ''; onChange?.(); });
   copyButton.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(input.value); status.textContent = '已複製查詢。'; }
-    catch { input.focus(); input.select(); status.textContent = '請使用系統複製操作複製已選取的查詢。'; }
+    try { await navigator.clipboard.writeText(input.value); showSnackbar('已複製查詢。');status.textContent = '已複製查詢。'; }
+    catch { showSnackbar('無法自動複製，已選取查詢文字，請使用系統複製。',{error:true});input.focus(); input.select(); status.textContent = '請使用系統複製操作複製已選取的查詢。'; }
   });
   clearButton.addEventListener("click", () => {
     input.value = ""; input.dispatchEvent(new Event("input", { bubbles: true })); input.focus();

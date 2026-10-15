@@ -1,48 +1,16 @@
-# Statistics tests (current Neo4j schema)
+# 統計功能測試
 
-All production statistics and snapshot queries use the rebuilt `neo4j` schema.
-TC-01 through TC-06 and TC-08 are retained; there is no TC-07 test.
-
-From `backend`, with Java 17:
+保留受控 repository 的 Java 合約、數值計算、表格排序、CSV、安全及目前網站互動測試。
+舊資料庫固定快照、過時 TC08 預期與未實作 fixture TODO 已移除；未改動資料庫或把舊預期改成目前值。
 
 ```powershell
-.\mvnw.cmd '-Dmaven.repo.local=.maven-cache/repository' -o test
-```
-
-Default tests use controlled repository doubles, not Neo4j. Enable read-only
-database snapshots explicitly:
-
-```powershell
-$env:NEO4J_SNAPSHOT_TESTS='true'
-.\mvnw.cmd '-Dmaven.repo.local=.maven-cache/repository' -o test
-Remove-Item Env:NEO4J_SNAPSHOT_TESTS
-```
-
-Credentials come from environment variables or backend `.env`. Database is always
-`neo4j`; missing credentials cause an explicit skip. Opted-in connection failures
-are errors. Offline Maven requires cached dependencies. Never commit credentials.
-
-Browser tests from the repository root, with Node.js and Playwright:
-
-```powershell
+# backend 目錄，Java 17
+./mvnw.cmd -Dmaven.repo.local=.maven-cache/repository -o test
+# repo 根目錄，Node / Playwright
 node --test tests/statistics/frontend.test.cjs
-node --test tests/statistics/live.test.cjs
+node --test tests/statistics/live.test.cjs tests/statistics/query-ui.test.cjs
 ```
 
-Use `NODE_PATH` for an external Playwright package and optionally
-`PLAYWRIGHT_EXECUTABLE` for installed Chromium. Live tests require the running
-backend and Neo4j. `STATISTICS_BASE` defaults to `http://127.0.0.1:18081`.
-
-TC-08 keeps the user's expected Western doctor numbers unchanged. The current
-database differs; that snapshot must remain red until the expectation/data
-discrepancy is explicitly resolved. A separate test verifies arithmetic for all
-three doctor categories without using the disputed fixed expected values.
-
-Eight module tests cover results, numeric sorting, missing values and CSV safety.
-Six unused client-side filter tests and `pages/query/filters.js` were removed;
-current server-side filtering is covered by API and live-page tests instead.
-Two isolated relationship-fixture TODOs remain pending and are not passes.
-No test writes fixtures into the production database.
-
-Current report: `docs/verification/district-statistics-schema-update-2026-10-13.md`.
-Older reports are historical and must not be used as current schema validation.
+live 測試以 STATISTICS_BASE 指定後端，預設 http://127.0.0.1:18080；需使用對應版本的前端與 API。
+Aura 連線驗證另以 AURA_READ_TESTS=true 啟用 Java AuraReadOnlyTest，未啟用不算通過。
+資料庫由 NEO4J_DATABASE 明確指定，不假定名稱為 neo4j。憑證不提交，測試不寫入正式資料庫。

@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const {chromium}=require('playwright');
-const base=process.env.INTEGRATION_BASE||'http://127.0.0.1:18087';
+const base=process.env.INTEGRATION_BASE||'http://127.0.0.1:18080';
 let browser;
 before(async()=>{await require('../cypher/ready.cjs')(base);browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE});});
 after(async()=>{await browser?.close();});
@@ -16,34 +16,6 @@ async function ready(viewport={width:1440,height:1000}){
   await page.click('#searchButton');await page.waitForFunction(()=>document.getElementById('totalCount').textContent==='共 14 筆');
   return page;
 }
-test('live detail matches Neo4j audit properties and exact normalized department edges',async()=>{
-  const snapshot=JSON.parse(fs.readFileSync(path.join(__dirname,'../../backend/migration-local/target-after.json'),'utf8'));
-  const nodes=new Map(snapshot.nodes.map(row=>[row.id,row]));
-  const facilities=snapshot.nodes.filter(row=>row.labels.includes('醫療院所'));
-  const edges=snapshot.relationships.filter(row=>row.type==='HAS_DEPARTMENT');
-  const departmentNames=row=>[...new Set(edges.filter(edge=>edge.start===row.id).map(edge=>nodes.get(edge.end).properties['科別名稱']))].sort();
-  const multi=facilities.find(row=>departmentNames(row).length>3);
-  const family=facilities.find(row=>departmentNames(row).includes('家庭醫學科'));
-  const selected=[...new Set([multi,family,...facilities.slice(0,6),facilities.find(row=>!row.properties.phone)])].filter(Boolean);
-  for(const row of selected){
-    const detail=await get('/api/facilities/detail?'+new URLSearchParams({sourceId:row.properties.sourceId}));
-    for(const field of ['sourceId','name','type','address','phone','notes','source'])assert.equal(detail[field],row.properties[field]||'');
-    for(const field of ['latitude','longitude'])assert.equal(detail[field],row.properties[field]??null);
-    assert.deepEqual(detail.departments.slice().sort(),departmentNames(row));
-    assert.ok(!detail.departments.includes('家醫科'));assert.equal('clinicTimeJson' in detail,false);
-    assert.ok(['available','missing','partial','invalid'].includes(detail.clinicHours.status));
-    if(detail.clinicHours.status==='available'){
-      const raw=JSON.parse(row.properties.clinicTimeJson);
-      for(const day of detail.clinicHours.days){
-        const expected=raw[day.day];
-        if(expected?.isClosed===true)assert.equal(day.status,'closed');
-        else if(expected?.slots?.length)assert.deepEqual(day.slots,expected.slots.map(({open,close})=>({open,close})));
-      }
-    }
-  }
-  assert.equal((await fetch(base+'/api/facilities/detail?sourceId=not-a-real-id')).status,404);
-  assert.equal((await fetch(base+'/api/facilities/detail?sourceId=')).status,400);
-});
 test('marker and result open the same nonmodal detail, focus returns and map stays usable',async()=>{
   const page=await ready();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{

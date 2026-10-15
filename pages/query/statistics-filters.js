@@ -69,8 +69,8 @@ export function initializeStatisticsFilters({ form, options, request, onStart, o
     const token = ++countyGeneration; get('searchButton').disabled = true;
     try {
       const data = await options(get('county').value);
-      if (token === countyGeneration) { bounds(data); conditionCount(); get('searchButton').disabled = false; }
-    } catch (error) { if (token === countyGeneration) onError(error); }
+      if (token === countyGeneration) { retryOptions.hidden=true;bounds(data); conditionCount(); get('searchButton').disabled = false; }
+    } catch (error) { if (token === countyGeneration) {retryOptions.hidden=false;onError(error);} }
   });
   form.addEventListener('reset', () => { cancel(); countyGeneration++; setTimeout(() => { Object.values(pickers).forEach(picker => picker.reset()); syncScope(); conditionCount(); if (!initial) return; districtOptions(); bounds(initial); get('personnelMin').disabled = true; get('specialtyMin').disabled = true; get('searchButton').disabled = false; execute(); }, 0); });
   form.addEventListener('input', event => { if (!filterIds.has(event.target.id)) return; conditionCount(); cancel(); onChange(); });
@@ -78,14 +78,16 @@ export function initializeStatisticsFilters({ form, options, request, onStart, o
   get('personnel').addEventListener('change', () => { get('personnelMin').value = ''; get('personnelMin').disabled = !get('personnel').value; syncScope(); conditionCount(); });
   get('specialty').addEventListener('change', () => { get('specialtyMin').value = ''; get('specialtyMin').disabled = !get('specialty').value; syncScope(); conditionCount(); });
   let initial;
+  const retryOptions = document.createElement('button');retryOptions.type='button';retryOptions.className='secondary';retryOptions.textContent='重新載入篩選選項';retryOptions.hidden=true;form.prepend(retryOptions);
+  retryOptions.addEventListener('click',()=>{retryOptions.hidden=true;if(initial)get('county').dispatchEvent(new Event('change'));else load();});
   async function load() {
     try {
       initial = await options(''); counties = initial.counties;
-      counties.forEach(county => get('county').append(new Option(county.name, county.name)));
+      get('county').replaceChildren(new Option('全國',''),...counties.map(county=>new Option(county.name,county.name)));retryOptions.hidden=true;
       pickers.personnel.setOptions(initial.personnel);
       pickers.specialty.setOptions(initial.specialties);
       bounds(initial); districtOptions(); syncScope(); conditionCount(); get('searchButton').disabled = false; execute();
-    } catch (error) { onError(error); }
+    } catch (error) { retryOptions.hidden=false;onError(error); }
   }
   load();
   return { execute, cancel };

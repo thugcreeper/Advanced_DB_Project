@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
-const base = process.env.STATISTICS_BASE || 'http://127.0.0.1:18081';
+const base = process.env.STATISTICS_BASE || 'http://127.0.0.1:18080';
 const artifacts = path.resolve(__dirname, '../../docs/verification/artifacts/query-ui-2026-10-13');
 let browser;
 before(async () => { browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_EXECUTABLE || undefined }); fs.mkdirSync(artifacts, { recursive: true }); });

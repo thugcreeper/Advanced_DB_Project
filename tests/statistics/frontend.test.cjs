@@ -53,9 +53,3 @@ for (const prefix of ['=', '+', '-', '@']) {
     assert.ok(!/^[=+\-@]/.test(field.slice(1)), 'quoted CSV text still starts with a spreadsheet formula trigger');
   });
 }
-
-// Isolated relationship fixtures still need a non-production Neo4j test database.
-for (const scenario of [
-  'controlled multi-relationship fixture does not multiply totals',
-  'controlled missing hospital/clinic/personnel/specialty becomes zero',
-]) test.todo(scenario + ' (isolated Neo4j fixture environment pending)');

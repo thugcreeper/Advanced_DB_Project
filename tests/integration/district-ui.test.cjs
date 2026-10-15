@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const {chromium}=require('playwright');
-const base=process.env.INTEGRATION_BASE||'http://127.0.0.1:18084';
+const base=process.env.INTEGRATION_BASE||'http://127.0.0.1:18080';
 let browser;
 before(async()=>{browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE});fs.mkdirSync(path.join(__dirname,'artifacts'),{recursive:true});});
 after(async()=>{await browser?.close();});

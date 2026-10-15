@@ -125,14 +125,14 @@ CORS 預設不開放跨域，拒絕 wildcard；此 Spring 設定由程序環境�
 
 ## GitHub Pages 接到 Render
 
-取得 Render 的 HTTPS 網址後，分別在 pages/district/index.html 與 pages/query/index.html 的 head 設定或加入：
+取得 Render 的 HTTPS 網址後，分別在 pages/district/index.html、pages/query/index.html 與 pages/graph/index.html 的 head 設定或加入：
 
 ```html
 <meta name="api-base" content="https://YOUR-BACKEND.onrender.com">
 ```
 
 重新發布 GitHub Pages，並確認 Render 的 CORS_ALLOWED_ORIGINS 與實際 Pages 來源一致。
-前端設定只放後端 HTTP 網址，不放任何 Neo4j URI、帳號或密碼；目前正式 Render 網址為 https://advanced-db-project-s6bd.onrender.com，district 與 query 兩頁已明確設定此 api-base；因此本機開啟這兩頁也會使用正式後端，若要測試本機 API，請暫時將 meta content 清空。
+前端設定只放後端 HTTP 網址，不放任何 Neo4j URI、帳號或密碼；目前正式 Render 網址為 https://advanced-db-project-s6bd.onrender.com，district、query 與 graph 三頁已明確設定此 api-base；因此本機開啟這三頁也會使用正式後端，若要測試本機 API，請暫時將 meta content 清空。
 若直接使用 Render 提供的前端頁面，api-base 留空即可使用同來源 API。
 
 Render 若採會休眠的方案，首次 HTML 尚未送達時無法執行 JavaScript 提示；GitHub Pages 與後端分離後，頁面可先顯示，再透過共用連線 gate 等待後端恢復。

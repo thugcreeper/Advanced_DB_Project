@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const fs = require('node:fs');
 const path = require('node:path');
-const base = process.env.CYPHER_BASE || 'http://127.0.0.1:18082';
+const base = process.env.CYPHER_BASE || 'http://127.0.0.1:18080';
 let browser;
 before(async () => { await require('./ready.cjs')(base); browser = await chromium.launch({ headless:true, executablePath: process.env.PLAYWRIGHT_EXECUTABLE || undefined }); });
 after(async () => { await browser?.close(); });

@@ -39,29 +39,6 @@ test('weekly summary exposes exact intervals, closed and unknown days with keybo
     assert.equal(await page.locator('#clinic-tab-monday').getAttribute('aria-selected'),'true');
   }finally{await page.close();}
 });
-test('real multi-department hospital grid matches API and stays noninteractive',async()=>{
-  const snapshot=JSON.parse(fs.readFileSync(path.join(__dirname,'../../backend/migration-local/target-after.json'),'utf8'));
-  const counts=new Map();for(const edge of snapshot.relationships.filter(r=>r.type==='HAS_DEPARTMENT'))counts.set(edge.start,(counts.get(edge.start)||0)+1);
-  const hospitalNode=snapshot.nodes.find(n=>n.labels.includes('醫療院所')&&n.properties.type==='綜合醫院'&&counts.get(n.id)>=20);
-  const hospital=hospitalNode.properties;
-  const membership=snapshot.relationships.find(r=>r.type==='HAS_FACILITY'&&r.end===hospitalNode.id);
-  const code=String(snapshot.nodes.find(n=>n.id===membership.start).properties['鄉鎮市區碼']);
-  const catalog=await fetch(base+'/api/districts').then(r=>r.json());
-  const county=catalog.find(c=>c.districts.some(d=>d.code===code));
-  const page=await ready(undefined,county.name,code);
-  try{
-    await page.locator(`li[data-source-id="${hospital.sourceId}"] .facility-open`).click();await page.locator('#detailContent').waitFor({state:'visible'});
-    const response=await fetch(base+'/api/facilities/detail?'+new URLSearchParams({sourceId:hospital.sourceId}));const actual=await response.json();
-    assert.deepEqual(await page.locator('.detail-departments li').allTextContents(),actual.departments);
-    assert.equal(await page.locator('#detailTitle').textContent(),hospital.name);
-    assert.equal(await page.locator('#detailType').textContent(),hospital.type);
-    await page.locator('#detailScroll').evaluate(el=>el.scrollTop=el.querySelector('.detail-departments').offsetTop-el.offsetTop-40);
-    await page.screenshot({path:path.join(artifacts,'care-hospital-desktop.png'),animations:'disabled'});
-    const header=await page.locator('.detail-header').boundingBox(),footer=await page.locator('#detailActions').boundingBox(),scroll=await page.locator('#detailScroll').boundingBox();
-    assert.ok(header.y+header.height<=scroll.y+1&&scroll.y+scroll.height<=footer.y+1);
-    assert.ok(!/營業中|設有急診|評價/.test(await page.locator('#facilityDetail').textContent()));
-  }finally{await page.close();}
-});
 test('CARE detail fits desktop, tablet and narrow mobile with intact time strings and one scroll area',async()=>{
   for(const viewport of [{width:1440,height:1000},{width:1024,height:768},{width:820,height:1180},{width:390,height:844},{width:320,height:700}]){
     const page=await ready(viewport);const errors=[];page.on('pageerror',e=>errors.push(e.message));

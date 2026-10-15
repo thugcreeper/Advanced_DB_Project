@@ -1,3 +1,4 @@
+import { showSnackbar } from '../../shared/snackbar.js';
 import { initializeEditor } from "./editor.js";
 import { initializeModes } from "./modes.js";
 import { initializeResults } from "./results.js";
@@ -32,21 +33,21 @@ editor = initializeEditor({ input: get('cypherInput'), clearButton: get('clearCy
   onExecute: queryCypher,
   onStart: () => { filters?.cancel(); clear(); status('Cypher 查詢中…'); },
   onChange: () => { if (mode === 'cypher') { clear(); status('查詢已變更，請執行查詢。'); } },
-  onSuccess: data => { cypherResults.update(data); get('downloadCypherCsv').disabled = data.rows.length === 0; status(`Neo4j Cypher・${data.columns.length} 欄${data.truncated ? '・結果已截斷，CSV 僅含顯示資料' : ''}`); map?.update(data); },
-  onError: error => { clear(); status(error.message, true); },
+  onSuccess: data => { showSnackbar(data.rows.length?`Cypher 查詢完成，共 ${data.rows.length} 筆${data.truncated?'（結果已截斷）':''}。`:'查詢已完成，沒有符合的資料。');cypherResults.update(data); get('downloadCypherCsv').disabled = data.rows.length === 0; status(`Neo4j Cypher・${data.columns.length} 欄${data.truncated ? '・結果已截斷，CSV 僅含顯示資料' : ''}`); map?.update(data); },
+  onError: error => { showSnackbar(error.message,{error:true});clear(); status(error.message, true); },
 });
-get('downloadCypherCsv').addEventListener('click', () => cypherResults.download());
+get('downloadCypherCsv').addEventListener('click', () => {cypherResults.download();showSnackbar('已開始下載 Cypher CSV。');});get('downloadCsv').addEventListener('click',()=>showSnackbar('已開始下載統計 CSV。'));
 filters = initializeStatisticsFilters({ form: get('builderPane'),
   options: county => statisticsRequest('/api/districts/statistics/options' + (county ? '?county=' + encodeURIComponent(county) : '')),
   request: statisticsRequest,
   onStart: () => { clear(); get('builderPane').setAttribute('aria-busy','true'); status('查詢中…'); },
   onSuccess: data => {
-    get('builderPane').setAttribute('aria-busy','false'); results.update(data.districts, { resetSort: true });
+    showSnackbar(data.districts.length?`查詢完成，找到 ${data.districts.length} 個行政區。`:'沒有符合條件的行政區，請調整篩選條件。');get('builderPane').setAttribute('aria-busy','false'); results.update(data.districts, { resetSort: true });
     const selected = ['personnel','specialty'].map(id => get(id).value).filter(Boolean).join('、');
     status(`Neo4j 統計・${({ all: '醫院＋診所', hospital: '醫院', clinic: '診所' })[data.scope || 'all']}${selected ? '・' + selected : ''}`);
   },
   onChange: () => { get('builderPane').setAttribute('aria-busy','false'); clear(); status('條件已變更，請重新查詢。'); },
-  onError: error => { get('builderPane').setAttribute('aria-busy','false'); clear(); status(error.message, true); },
+  onError: error => { showSnackbar(error.message,{error:true});get('builderPane').setAttribute('aria-busy','false'); clear(); status(error.message, true); },
 });
 get('aboutButton').addEventListener('click', () => get('aboutDialog').showModal());
 initializeModes({ tabs: [...document.querySelectorAll('.mode-tab')], panes: [...document.querySelectorAll('.mode-pane')], onChange: next => {
