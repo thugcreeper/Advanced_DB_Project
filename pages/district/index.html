@@ -6,16 +6,16 @@
 <title>行政區查詢｜臺灣醫療資源分析系統</title>
 <link rel="stylesheet" href="../../shared/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="facility-detail.css">
 </head>
 <body>
 <header class="topbar"><strong>臺灣醫療資源分析系統</strong><button class="text-button" id="aboutButton" type="button">ⓘ 關於本專案</button></header>
 <div class="workspace">
 <nav class="sidebar" aria-label="主導覽">
-<button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">⌂</span><span>首頁<small>尚未開放</small></span></button>
 <a class="nav-item" href="../query/index.html"><span class="nav-icon" aria-hidden="true">⌕</span><span>查詢分析</span></a>
 <a class="nav-item active" href="./index.html" aria-current="page"><span class="nav-icon" aria-hidden="true">▤</span><span>行政區查詢</span></a>
 <button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">♧</span><span>圖形關係<small>尚未開放</small></span></button>
-<button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">ⓘ</span><span>資料介紹<small>尚未開放</small></span></button>
+<a class="nav-item" href="../data/index.html"><span class="nav-icon" aria-hidden="true">ⓘ</span><span>資料介紹</span></a>
 </nav>
 <main>
 <div class="page-heading"><h1>行政區查詢</h1></div>
@@ -26,9 +26,12 @@
 <label for="county">縣市<select id="county" required disabled><option value="">載入縣市中…</option></select></label>
 <label for="district">鄉鎮市區<select id="district" disabled><option value="">請先選擇縣市</option></select></label>
 <label for="facilityType">院所類型<select id="facilityType"><option value="all">全部</option><option value="hospital">醫院</option><option value="clinic">診所</option></select></label>
+<label for="facilityDepartment">院所科別<select id="facilityDepartment" disabled><option value="">不限</option></select></label>
 </div>
 <div class="search-actions"><button id="searchButton" class="primary" type="submit" disabled>搜尋</button></div>
 </form>
+<p class="search-status">目前院所清單：政府公開資料經自行處理，與 114 年官方院所彙總為不同統計口徑。</p>
+<p id="departmentCatalogStatus" class="error-message" role="status" hidden></p>
 <p id="catalogError" class="error-message" role="alert" hidden></p>
 <button id="retryCatalog" class="secondary" type="button" hidden>重新載入行政區</button>
 <section class="results" aria-labelledby="resultsTitle" aria-busy="false">
@@ -49,7 +52,18 @@
 </div>
 </main>
 </div>
-<dialog id="aboutDialog"><h2>關於本專案</h2><p>臺灣醫療資源分析系統。行政區查詢使用實際院所資料；查詢分析頁面仍使用示範統計資料。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
+<aside id="facilityDetail" class="facility-detail" role="dialog" aria-modal="false" aria-labelledby="detailTitle" hidden>
+<header class="detail-header"><div class="detail-toolbar"><span class="detail-eyebrow">院所詳情</span><button id="detailClose" class="detail-icon-button" type="button" title="關閉院所詳情" aria-label="關閉院所詳情"></button></div>
+<div class="detail-identity"><span id="detailType" class="detail-type" hidden></span><h2 id="detailTitle" tabindex="-1">院所詳情</h2></div>
+</header>
+<div id="detailScroll" class="detail-scroll" tabindex="-1">
+<p id="detailStatus" class="detail-status" role="status" aria-live="polite"></p>
+<button id="detailRetry" class="secondary" type="button" hidden>重新載入</button>
+<div id="detailContent" hidden></div>
+</div>
+<footer id="detailActions" class="detail-actions" hidden><a id="detailCall" class="detail-call" role="link" aria-disabled="true" tabindex="-1">撥打電話</a><button id="detailLocate" class="detail-locate" type="button">在地圖上定位</button><a id="detailGoogle" class="detail-google" target="_blank" rel="noopener noreferrer">Google 地圖<span class="sr-only">（另開分頁）</span></a><p id="detailActionHint" class="detail-action-hint" hidden></p></footer>
+</aside>
+<dialog id="aboutDialog"><h2>關於本專案</h2><p>臺灣醫療資源分析系統。行政區查詢使用實際院所資料；查詢分析頁面使用政府統計資料。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
 <script src="../../shared/vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script>
 </body>
 </html>

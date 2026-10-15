@@ -1,6 +1,3 @@
 {
-    "code-runner.runInTerminal": true,
-    "code-runner.executorMapByGlob": {
-        "ImportMedicalFacilities.java": "cmd /d /c \"$workspaceRoot\\import-medical-facilities.cmd\""
-    }
+    "code-runner.runInTerminal": true
 }

@@ -12,6 +12,7 @@ import tw.advanceddb.medical.config.Neo4jConnection;
 class CypherQueryServiceTest {
     @Test void blocksWriteBeforeExecution() {
         var connection = mock(Neo4jConnection.class); var driver = mock(Driver.class);
+        when(connection.database()).thenReturn("configured_database");
         var session = mock(Session.class); var tx = mock(Transaction.class);
         var explanation = mock(Result.class); var summary = mock(ResultSummary.class);
         when(connection.driver()).thenReturn(driver); when(driver.session(any(SessionConfig.class))).thenReturn(session);
@@ -22,6 +23,9 @@ class CypherQueryServiceTest {
         assertThatThrownBy(()->service.execute(new CypherQueryService.Request("CREATE (:MustNotExist) RETURN 1",Map.of())))
                 .isInstanceOf(CypherQueryService.Rejected.class);
         verify(tx,never()).run(eq("CREATE (:MustNotExist) RETURN 1"),anyMap()); verify(tx).close();
+        var config = org.mockito.ArgumentCaptor.forClass(SessionConfig.class); verify(driver).session(config.capture());
+        assertThat(config.getValue().database()).contains("configured_database");
+        assertThat(config.getValue().defaultAccessMode()).isEqualTo(AccessMode.READ);
     }
     @Test void acceptsOnlyExplicitReadProceduresAndRejectsExternalCsv() {
         var plan = mock(Plan.class); when(plan.operatorType()).thenReturn("ProcedureCall"); when(plan.children()).thenReturn(List.of());

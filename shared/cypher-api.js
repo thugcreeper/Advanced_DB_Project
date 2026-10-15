@@ -1,5 +1,5 @@
 const configured = document.querySelector('meta[name="api-base"]')?.content;
-const base = configured || (window.location.port === '8010' ? 'http://127.0.0.1:18080' : window.location.origin);
+const base = configured || window.location.origin;
 export async function queryCypher(query, { parameters = {}, signal } = {}) {
   let response;
   try {

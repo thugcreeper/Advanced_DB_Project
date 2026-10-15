@@ -19,11 +19,41 @@ import tw.advanceddb.medical.repository.DistrictFacilityRepository.SearchResult;
 import tw.advanceddb.medical.service.*;
 
 @WebMvcTest(DistrictFacilityController.class)
-@Import({DistrictCatalog.class, DistrictFacilityService.class})
+@Import({DistrictCatalog.class, DistrictFacilityService.class, ClinicHoursParser.class})
 class DistrictSearchTest {
     @Autowired MockMvc mvc;
     @Autowired DistrictCatalog catalog;
     @MockitoBean DistrictFacilityRepository repository;
+
+    @Test void detailReturnsOnlyDatabaseFieldsAndParsedHours() throws Exception {
+        when(repository.detail("opaque-id")).thenReturn(java.util.Optional.of(new DistrictFacilityRepository.DetailRow(
+                "opaque-id", "測試院所", "醫院", "地址", "02-12345678", 25.0, 121.0, false,
+                List.of("內科", "家庭醫學科"), "{\"monday\":{\"isClosed\":true}}", "備註", "source.json")));
+        mvc.perform(get("/api/facilities/detail").param("sourceId", "opaque-id"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.name").value("測試院所"))
+                .andExpect(jsonPath("$.departments[1]").value("家庭醫學科"))
+                .andExpect(jsonPath("$.clinicHours.status").value("available"))
+                .andExpect(jsonPath("$.clinicHours.days[0].status").value("closed"))
+                .andExpect(jsonPath("$.clinicTimeJson").doesNotExist());
+    }
+    @Test void detailHandlesNotFoundInvalidIdAndDatabaseErrors() throws Exception {
+        when(repository.detail("missing")).thenReturn(java.util.Optional.empty());
+        mvc.perform(get("/api/facilities/detail").param("sourceId", "missing"))
+                .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("FACILITY_NOT_FOUND"));
+        mvc.perform(get("/api/facilities/detail").param("sourceId", " ")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/facilities/detail")).andExpect(status().isBadRequest());
+        verify(repository, never()).detail(" ");
+        when(repository.detail("offline")).thenThrow(new IllegalStateException("secret"));
+        mvc.perform(get("/api/facilities/detail").param("sourceId", "offline"))
+                .andExpect(status().isServiceUnavailable()).andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secret"))));
+    }
+    @Test void detailHandlesMissingOptionalFields() throws Exception {
+        when(repository.detail("empty")).thenReturn(java.util.Optional.of(new DistrictFacilityRepository.DetailRow(
+                "empty", "院所", "診所", "", "", null, null, false, List.of(), "", "", "")));
+        mvc.perform(get("/api/facilities/detail").param("sourceId", "empty"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.departments").isEmpty())
+                .andExpect(jsonPath("$.clinicHours.status").value("missing"));
+    }
 
     @Test void csvContainsUniqueCodesAndCountyGroups() throws Exception {
         var rows = catalog.counties().stream().flatMap(county -> county.districts().stream()).toList();
@@ -43,7 +73,7 @@ class DistrictSearchTest {
         verifyNoInteractions(repository);
     }
     @Test void countsMissingCoordinatesWithoutLosingFacilities() throws Exception {
-        when(repository.search(eq("新竹市"), eq("1205"), eq("all"), anyString(), anyString(), anyList(), anyList())).thenReturn(new SearchResult(4, 2, List.of(
+        when(repository.search(anyList(), eq("1205"), eq("all"), eq(""))).thenReturn(new SearchResult(4, 2, List.of(
                 new Facility("1", "A", "醫院", "新竹市香山區", "", 24.75, 120.9, false),
                 new Facility("2", "B", "診所", "新竹市香山區", "", null, 120.9, false),
                 new Facility("3", "C", "診所", "新竹市香山區", "", 91.0, 120.9, false),
@@ -55,24 +85,33 @@ class DistrictSearchTest {
                 .andExpect(jsonPath("$.unassignedTotal").value(2));
     }
     @Test void countyOnlyDefaultsToHospitalsAndSupportsExplicitType() throws Exception {
-        when(repository.search(anyString(), anyString(), anyString(), anyString(), anyString(), anyList(), anyList()))
+        when(repository.search(anyList(), anyString(), anyString(), anyString()))
                 .thenReturn(new SearchResult(0, 0, List.of()));
         mvc.perform(get("/api/facilities").param("county", "新竹市"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.districtCode").value(""))
                 .andExpect(jsonPath("$.type").value("hospital"));
-        verify(repository).search(eq("新竹市"), eq(""), eq("hospital"), anyString(), anyString(), anyList(), anyList());
+        verify(repository).search(anyList(), eq(""), eq("hospital"), eq(""));
         mvc.perform(get("/api/facilities").param("county", "新竹市").param("type", "clinic"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.type").value("clinic"));
         mvc.perform(get("/api/facilities").param("county", "不存在的縣市"))
                 .andExpect(status().isBadRequest());
     }
     @Test void emptyResultsDifferFromDatabaseFailure() throws Exception {
-        when(repository.search(anyString(), anyString(), anyString(), anyString(), anyString(), anyList(), anyList())).thenReturn(new SearchResult(0, 0, List.of()));
+        when(repository.search(anyList(), anyString(), anyString(), anyString())).thenReturn(new SearchResult(0, 0, List.of()));
         mvc.perform(get("/api/facilities").param("county", "新竹市").param("districtCode", "1205"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.total").value(0));
-        when(repository.search(anyString(), anyString(), anyString(), anyString(), anyString(), anyList(), anyList())).thenThrow(new IllegalStateException("private configuration"));
+        when(repository.search(anyList(), anyString(), anyString(), anyString())).thenThrow(new IllegalStateException("private configuration"));
         mvc.perform(get("/api/facilities").param("county", "新竹市").param("districtCode", "1205"))
                 .andExpect(status().isServiceUnavailable()).andExpect(jsonPath("$.code").value("DATABASE_UNAVAILABLE"))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("private configuration"))));
+    }
+    @Test void departmentFiltersUseExactValidatedNames() throws Exception {
+        when(repository.departments()).thenReturn(List.of("內科","家庭醫學科"));
+        when(repository.search(anyList(),eq("1205"),eq("all"),eq("內科"))).thenReturn(new SearchResult(0,0,List.of()));
+        mvc.perform(get("/api/facilities").param("county","新竹市").param("districtCode","1205").param("department","內科"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.department").value("內科"));
+        verify(repository).search(anyList(),eq("1205"),eq("all"),eq("內科"));
+        mvc.perform(get("/api/facilities").param("county","新竹市").param("department","內科' RETURN 1"))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -35,9 +35,10 @@ export function initializeMap({ container, status, homeButton, count, createMark
       count.textContent = `${rows.length} 個標記`;
       if (fit) { showWholeTaiwan = rows.length === 0; fitView(); }
     },
-    focus(index) {
+    focus(index, { offset = [0, 0] } = {}) {
       if (!markers[index]) return;
       map.setView(markers[index].getLatLng(), Math.max(map.getZoom(), 15), { animate: false });
+      if (offset.some(value => value !== 0)) map.panBy(offset, { animate: false });
       markers[index].openPopup();
     },
   };

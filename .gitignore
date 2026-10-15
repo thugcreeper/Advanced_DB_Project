@@ -25,3 +25,5 @@
 /docs/verification/artifacts/**/*.png
 /docs/verification/artifacts/**/*.tap
 /tests/cypher/artifacts/
+/backend/migration-local/
+/tests/integration/artifacts/

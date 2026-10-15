@@ -5,7 +5,7 @@ h1 { font-size: 34px; line-height: 1.4; }
 .search-column, .map-column { min-width: 0; }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .fields label { display: grid; gap: 7px; font-size: 14px; }
-.fields label:last-child { grid-column: 1 / -1; }
+.fields label:last-child { grid-column: auto; }
 select { width: 100%; min-width: 0; min-height: 43px; padding: 8px 10px; border: 1px solid #bdc8d5; border-radius: 4px; background: #fff; color: #26313f; }
 select:disabled { background: #f3f5f7; color: #737b86; }
 .search-actions { display: flex; justify-content: flex-end; padding: 14px 0 20px; }
@@ -38,9 +38,6 @@ select:disabled { background: #f3f5f7; color: #737b86; }
 .map-legend i { width: 10px; height: 10px; border-radius: 50%; }
 .hospital-dot { background: #bf3446; } .clinic-dot { background: #178779; }
 .map-status { font-size: 12px; line-height: 1.6; padding: 8px 12px; color: #8b3f16; background: #fff3e8; }
-.facility-popup { min-width: 190px; max-width: 260px; overflow-wrap: anywhere; }
-.facility-popup strong { display: block; font-size: 14px; margin-bottom: 5px; }
-.facility-popup p { margin: 5px 0; font-size: 12px; }
 .leaflet-control-attribution { font-size: 10px; }
 @media (max-width: 1100px) and (min-width: 761px) { .workspace { grid-template-columns: 160px minmax(0, 1fr); } .nav-item { font-size: 15px; gap: 10px; padding: 10px; } main { padding: 20px 16px; } .district-grid { grid-template-columns: minmax(260px, 45fr) minmax(0, 55fr); gap: 16px; } }
 @media (max-width: 760px) { main { padding: 18px 14px; } h1 { font-size: 28px; } .district-grid { grid-template-columns: 1fr; gap: 22px; } .facility-list { max-height: 380px; } .map-wrap { height: 480px; } }

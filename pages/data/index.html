@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>資料介紹｜臺灣醫療資源分析系統</title>
+<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar"><strong>臺灣醫療資源分析系統</strong><button class="text-button" id="aboutButton" type="button">ⓘ 關於本專案</button></header>
+<div class="workspace">
+<nav class="sidebar" aria-label="主導覽">
+<a class="nav-item" href="../query/index.html"><span class="nav-icon" aria-hidden="true">⌕</span><span>查詢分析</span></a>
+<a class="nav-item" href="../district/index.html"><span class="nav-icon" aria-hidden="true">▤</span><span>行政區查詢</span></a>
+<button class="nav-item" type="button" disabled><span class="nav-icon" aria-hidden="true">♧</span><span>圖形關係<small>尚未開放</small></span></button>
+<a class="nav-item active" href="./index.html" aria-current="page"><span class="nav-icon" aria-hidden="true">ⓘ</span><span>資料介紹</span></a>
+</nav>
+<main>
+<div class="content">
+<div class="page-heading"><h1>資料介紹</h1><span class="review-date">來源頁核對：<time id="sourceReviewDate" datetime="2026-10-14">2026-10-14</time></span></div>
+<p class="subtitle">資料來源、統計口徑與指標定義</p>
+<dl class="data-overview">
+<div><dt>統計範圍</dt><dd>368 <span>個行政區</span></dd></div>
+<div><dt>所得統計</dt><dd>112 <span>年</span></dd></div>
+<div><dt>人口與醫療統計</dt><dd>114 <span>年</span></dd></div>
+</dl>
+<nav class="section-nav" aria-label="資料介紹章節"><a href="#sources">資料來源</a><a href="#metrics">指標定義</a><a href="#structure">資料結構</a><a href="#limitations">使用限制</a></nav>
+
+<section id="sources" aria-labelledby="sourcesTitle">
+<div class="section-heading"><h2 id="sourcesTitle">資料來源</h2><span>6 項政府資料集</span></div>
+<p class="section-description">採用年度以本專案統計資料為準。來源網站更新後，本站資料不會自動同步；來源頁核對日期也不等於原始檔下載日期。</p>
+<table class="source-table"><caption class="sr-only">本專案政府統計資料來源</caption><thead><tr><th scope="col">資料集／提供機關</th><th scope="col">採用年度</th><th scope="col">用途與統計口徑</th><th scope="col">官方來源</th></tr></thead><tbody id="sourceRows"></tbody></table>
+<noscript><p>來源清單需要 JavaScript。政府資料集編號：103066、8410、6474、6476、6475、6477。</p></noscript>
+<div class="source-pending"><h3>其他資料來源</h3><dl>
+<div><dt>個別院所地址與座標<span class="pending-label">政府公開資料經自行處理</span></dt><dd>供院所搜尋及地圖定位使用。未提供原始來源網址、資料版本與座標處理細節，不能視為上述 114 年政府統計的完整院所名冊。</dd></div>
+<div><dt>行政區名稱與代碼表<span class="pending-label">統計資料附帶代碼</span></dt><dd>來源為醫院／診所人力與科別統計 ZIP 的附帶代碼表，用於縣市／行政區選單與資料對應。已核對 114 年醫院人力 ZIP 的「103 年以後適用」名稱欄位；例如 102 對應臺北市大安區，不是 8 碼戶政代碼。<a href="https://data.gov.tw/dataset/6474" target="_blank" rel="noopener noreferrer">查看附帶代碼表來源</a></dd></div>
+</dl></div>
+<p class="source-license">六項政府資料集的來源頁均標示「政府資料開放授權條款－第 1 版」。自行處理的院所資料之原始來源及授權資訊未提供。</p>
+</section>
+
+<section id="metrics" aria-labelledby="metricsTitle">
+<div class="section-heading"><h2 id="metricsTitle">指標定義</h2><span>單位與計算方式</span></div>
+<dl class="metric-list">
+<div><dt>平均綜合所得<span>千元</span></dt><dd>使用所得統計的「平均數」欄位。1500 千元相當於 150 萬元，範例中的高所得門檻為嚴格大於 1500。此數值不是每位居民的平均薪資。</dd></div>
+<div><dt>年底人口數<span>人</span></dt><dd>使用 114 年人口統計的年底人口數，作為每萬人口醫療人力指標的分母。</dd></div>
+<div><dt>土地面積與人口密度<span>km²／人每 km²</span></dt><dd>土地面積與人口密度使用人口資料中的原始欄位；人口密度的定義為人口數除以土地面積。</dd></div>
+<div><dt>院所總數<span>家</span></dt><dd>醫院家數＋診所家數。各科別的院所家數可能重複，不能加總當成院所總數。</dd></div>
+<div><dt>醫事人員總數<span>人</span></dt><dd>加總醫院與診所統計中的「醫事人員總計」。此指標包含多種醫事人員，不等於醫師總數。</dd></div>
+<div><dt>醫師總數<span>人</span></dt><dd>西醫師＋中醫師＋牙醫師，三類均包含醫院與診所人數。單獨選擇西醫師時，僅計算西醫師。</dd></div>
+<div><dt>每萬人口醫師數<span>人／萬人</span></dt><dd><span class="formula">三類醫師總數 ÷ 年底人口數 × 10000</span>人口為零或缺失時不計算比率，以「未提供」呈現。</dd></div>
+<div><dt>每萬人口醫事人員數<span>人／萬人</span></dt><dd><span class="formula">醫事人員總數 ÷ 年底人口數 × 10000</span>使用醫事人員總計，不以三類醫師或科別數量代替。</dd></div>
+<div><dt>科別院所家數<span>家</span></dt><dd>提供所選科別的院所數。醫院與診所依所選範圍分開或加總，這不是該科別的醫師人數。</dd></div>
+<div><dt>P20 與 P80<span>連續百分位數</span></dt><dd>範例查詢使用 percentileCont，在全臺有效行政區母體計算。低 20% 使用 ≤ P20，高 20% 使用 ≥ P80；同值會一併納入，因此筆數不一定恰好是 20%。兩項指標的門檻分別計算，不在已篩選子集合重算。</dd></div>
+</dl>
+<p class="section-note">比率通常顯示至小數點後 2 位；百分位數篩選使用未四捨五入的門檻。無效或缺失數值會影響有效樣本數。</p>
+</section>
+
+<section id="structure" aria-labelledby="structureTitle">
+<div class="section-heading"><h2 id="structureTitle">資料結構</h2><span>行政區統計與院所位置分開記錄</span></div>
+<p class="section-description">統計以完整行政區名稱與專案代碼對應，避免不同縣市的同名行政區混淆。行政區保留五類官方統計，並連結目前院所清單；兩者共用科別名稱，但資料意義不同。</p>
+<div class="table-scroll" role="region" aria-label="行政區統計關係表" tabindex="0"><table class="schema-table"><thead><tr><th scope="col">行政區連結的資料</th><th scope="col">關係名稱</th><th scope="col">主要數值</th><th scope="col">年度／類型</th></tr></thead><tbody>
+<tr><th scope="row">綜合所得</th><td><code>RECORD_INCOME</code></td><td>平均數、中位數、所得總額</td><td>112 年</td></tr>
+<tr><th scope="row">人口與土地</th><td><code>RECORD_POPULATION_AND_AREA</code></td><td>年底人口數、面積、密度</td><td>114 年</td></tr>
+<tr><th scope="row">醫療院所統計</th><td><code>RECORD_MEDICAL_FACILITIES</code></td><td>院所家數、醫事人員總計</td><td>114 年／醫院或診所</td></tr>
+<tr><th scope="row">醫事人員類別</th><td><code>RECORD_PERSONNEL</code></td><td>關係上的人員數量</td><td>醫院或診所</td></tr>
+<tr><th scope="row">科別</th><td><code>RECORD_DEPARTMENT</code></td><td>關係上的科別院所家數</td><td>醫院或診所</td></tr>
+<tr><th scope="row">行政區 → 實際院所</th><td><code>HAS_FACILITY</code></td><td>可靠配對的目前院所清單</td><td>來源資料版本</td></tr>
+<tr><th scope="row">實際院所 → 科別</th><td><code>HAS_DEPARTMENT</code></td><td>院所原始科別與標準化名稱</td><td>原始來源關係</td></tr>
+</tbody></table></div>
+<div class="structure-notes"><div><h3>行政區統計</h3><p>院所統計節點代表「某行政區、某類型院所」的彙總，不代表一間實際醫院或診所。科別統計數量保留官方值，不由院所清單回填。</p></div><div><h3>個別院所位置</h3><p>院所名稱、地址、電話與經緯度屬於另一份來源資料。院所科別僅合併已確認的別名並保留原名；地圖標記數可能與行政區統計家數不同，不能互相代替。</p></div></div>
+</section>
+
+<section id="limitations" aria-labelledby="limitationsTitle">
+<div class="section-heading"><h2 id="limitationsTitle">使用限制</h2><span>解讀查詢結果時的注意事項</span></div>
+<ol class="limitations-list">
+<li><h3>跨年度比較</h3><p>所得為 112 年，人口及醫療為 114 年。可觀察分布與差異，不能將結果宣稱為同年度比較或所得造成醫療資源變化的因果證據。</p></li>
+<li><h3>所得資料的涵蓋範圍</h3><p>來源是綜合所得稅申報核定與各類所得資料。來源說明指出未納入政府移轉支出、免稅及分離課稅所得，不能當成居民全部收入。</p></li>
+<li><h3>缺資料與零值</h3><p>缺少醫院或診所統計時，部分查詢以 0 計算以保留行政區。缺失不一定代表真實為零，仍需核對原始資料；Cypher 範例會附上相關資料註記。</p></li>
+<li><h3>數量與可近性</h3><p>院所家數及人員數不直接代表就醫可近性、服務品質或實際看診量。交通距離、開診時間、服務容量與跨區就醫也會影響使用情況。</p></li>
+<li><h3>地圖位置與資料版本</h3><p>位置缺失或待核對的院所不顯示標記。院所資料由政府公開資料自行處理，版本與處理細節未提供，不能宣稱地圖是 114 年統計院所的完整名冊或即時營業清單。</p></li>
+<li><h3>來源欄位的文字差異</h3><p>醫院與診所科別來源說明記載，部分 CSV 的「贋復補綴牙科」以「?復補綴牙科」呈現。查詢選項以本專案資料中的實際名稱為準。</p></li>
+</ol>
+</section>
+<footer class="data-footer"><a href="../query/index.html">返回查詢分析</a><span>資料介紹核對日期：2026-10-14</span></footer>
+</div>
+</main>
+</div>
+<dialog id="aboutDialog"><h2>關於本專案</h2><p>以行政區統計探索臺灣醫療資源分布。所得採 112 年，人口與醫療採 114 年；資料來源與使用限制請見本頁。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
+<script type="module" src="app.js"></script>
+</body>
+</html>

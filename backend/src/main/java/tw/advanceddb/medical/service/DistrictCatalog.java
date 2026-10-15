@@ -2,7 +2,6 @@ package tw.advanceddb.medical.service;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import tw.advanceddb.medical.model.District;
 
@@ -11,7 +10,6 @@ public final class DistrictCatalog {
     public record County(String name, List<District> districts) {}
     private final Map<String, District> districts = new LinkedHashMap<>();
     private final List<County> counties;
-    private final String addressPattern;
     public DistrictCatalog() { this(DistrictCatalog.class.getResourceAsStream("/districts/行政區與代碼.csv")); }
     public DistrictCatalog(InputStream source) {
         if (source == null) throw new IllegalStateException("找不到行政區 CSV。");
@@ -36,17 +34,8 @@ public final class DistrictCatalog {
         } catch (IOException exception) { throw new IllegalStateException("行政區 CSV 無法讀取。", exception); }
         if (districts.isEmpty()) throw new IllegalStateException("行政區 CSV 沒有資料。");
         counties = groups.entrySet().stream().map(entry -> new County(entry.getKey(), List.copyOf(entry.getValue()))).toList();
-        addressPattern = "^(?:[0-9０-９]{3,6})?(?:" + String.join("|", districts.values().stream()
-                .map(district -> Pattern.quote(district.county() + district.name())).distinct().toList()) + ").*";
     }
     public List<County> counties() { return counties; }
-    public String addressPattern() { return addressPattern; }
-    public List<String> districtKeys() {
-        return districts.values().stream().map(district -> district.county() + "|" + district.code()).toList();
-    }
-    public List<String> addressPrefixes() {
-        return districts.values().stream().map(district -> district.county() + district.name()).distinct().toList();
-    }
     public String requireCounty(String county) {
         String name = county == null ? "" : county.trim().replace('台', '臺');
         if (counties.stream().noneMatch(item -> item.name().equals(name)))

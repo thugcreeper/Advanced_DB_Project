@@ -40,7 +40,7 @@ class StatisticsSnapshotTest {
                     coalesce(sum(CASE WHEN r.類型='診所' AND category.人員類別='西醫師' THEN r.數量 ELSE 0 END),0) AS clinicWesternDoctors,
                     coalesce(sum(CASE WHEN r.類型='診所' AND category.人員類別='中醫師' THEN r.數量 ELSE 0 END),0) AS clinicChineseDoctors,
                     coalesce(sum(CASE WHEN r.類型='診所' AND category.人員類別='牙醫師' THEN r.數量 ELSE 0 END),0) AS clinicDentists }
-            CALL { WITH d OPTIONAL MATCH (d)-[r:PROVIDE_DEPARTMENT]->(category:科別)
+            CALL { WITH d OPTIONAL MATCH (d)-[r:RECORD_DEPARTMENT]->(category:科別)
                 WHERE category.科別名稱=$specialty
                 RETURN coalesce(sum(CASE WHEN r.類型='醫院' THEN r.數量 ELSE 0 END),0) AS hospitalSpecialty,
                     coalesce(sum(CASE WHEN r.類型='診所' THEN r.數量 ELSE 0 END),0) AS clinicSpecialty }

@@ -34,7 +34,7 @@ public class CypherQueryService {
         Map<String,Object> parameters = request.parameters() == null ? Map.of() : request.parameters();
         if (bytes(parameters) > 64_000) throw new IllegalArgumentException("查詢參數過大。");
         String query = request.query().trim();
-        try (var session = connection.driver().session(SessionConfig.builder().withDatabase("neo4j")
+        try (var session = connection.driver().session(SessionConfig.builder().withDatabase(connection.database())
                 .withDefaultAccessMode(AccessMode.READ).withFetchSize(100).build());
              var tx = session.beginTransaction(TransactionConfig.builder().withTimeout(Duration.ofSeconds(15)).build())) {
             var summary = tx.run("EXPLAIN " + query, parameters).consume();

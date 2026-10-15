@@ -7,9 +7,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestControllerAdvice(assignableTypes = DistrictFacilityController.class)
 public class DistrictApiErrors {
+    @ExceptionHandler(tw.advanceddb.medical.service.DistrictFacilityService.FacilityNotFoundException.class)
+    public ResponseEntity<Map<String, String>> notFound(Exception exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("code", "FACILITY_NOT_FOUND", "message", "查無此院所，請重新搜尋。"));
+    }
     @ExceptionHandler({IllegalArgumentException.class, MissingServletRequestParameterException.class})
     public ResponseEntity<Map<String, String>> invalid(Exception exception) {
-        return ResponseEntity.badRequest().body(Map.of("code", "INVALID_FILTER", "message", "請選擇有效的縣市、行政區及院所類型。"));
+        return ResponseEntity.badRequest().body(Map.of("code", "INVALID_FILTER", "message", "查詢條件或院所識別碼無效，請確認後重試。"));
     }
     @ExceptionHandler({Neo4jException.class, IllegalStateException.class, io.github.cdimascio.dotenv.DotenvException.class})
     public ResponseEntity<Map<String, String>> unavailable(Exception exception) {

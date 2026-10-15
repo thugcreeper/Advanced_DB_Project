@@ -64,16 +64,17 @@ options 回傳 `bounds`（income/population/area/hospitalCount/clinicCount，各
 - 503 `DATABASE_UNAVAILABLE`：連線失敗、設定或資料問題、資料庫查詢逾時。
 - 500 `QUERY_FAILED`：其他查詢錯誤。不回傳連線密碼或內部例外。
 
-統計查詢指定 `neo4j`，院所查詢仍使用 `medicalfacilities`。共用既有連線設定，`.env` 的 `NEO4J_DATABASE` 仍為medicalfacilities，不需為統計改設定。
+統計、院所搜尋／詳情與唯讀 Cypher 均由 `Neo4jConnection` 讀取同一個 `NEO4J_DATABASE`，正式設定為 `neo4j`；不再各自硬編碼資料庫名稱。
+來源庫 `medicalfacilities` 的資料保留，但網站不讀取它，舊匯入工具亦已移除。網站使用 `NEO4J_URI`、`NEO4J_USERNAME`、`NEO4J_PASSWORD` 與必填的 `NEO4J_DATABASE`，缺少資料庫設定會回報設定錯誤，不再保留舊值特例。
 統計Cypher為固定、參數化唯讀查詢，各關係族分開聚合，交易逾時15秒。
 目前368區全量聚合後，在Java套用條件與排序，total為實際符合筆數；不分頁、不將顯示筆數假充總數。
-未開放任意Cypher或SQL字串。人口／面積範圍每次讀取真實統計，不使用硬編碼上下界。
-Neo4j資料沒有寫入。地圖不使用假行政區座標，定位功能維持暫緩。
+此統計 API 不接受任意 Cypher 或 SQL 字串；網站的唯讀 Cypher 編輯器使用獨立的 `/api/cypher/query`。人口／面積範圍每次讀取真實統計，不使用硬編碼上下界。
+統計 API 不寫入 Neo4j。統計篩選不偽造行政區代表座標；Cypher 結果可依行政區載入實際院所位置，行政區查詢頁亦可搜尋及定位實際院所。
 
 ## 測試頁面
 
 推薦由後端開啟 `/pages/query/index.html`。不要直接以file協定開HTML。
-本次預覽服務為 `http://127.0.0.1:18081/pages/query/index.html`。
+正式 Spring Boot 預設入口為 `http://127.0.0.1:18080/pages/query/index.html`；個別測試預覽的連接埠並非正式啟動要求。
 原有API base設定仍可用於分離前後端部署；普通Live Server若沒有指定API base會向自己的port查詢，不能取代後端。
 
 
@@ -84,7 +85,7 @@ Neo4j資料沒有寫入。地圖不使用假行政區座標，定位功能維持
 (行政區)-[人口年度:RECORD_POPULATION_AND_AREA {統計年:114}]->(:人口與土地)
 (行政區)-[醫療年度:RECORD_MEDICAL_FACILITIES {統計年:114}]->(:醫療院所統計)
 (行政區)-[:RECORD_PERSONNEL {類型:'醫院',數量:人數}]->(:醫事人員類別)
-(行政區)-[:PROVIDE_DEPARTMENT {類型:'醫院',數量:院所家數}]->(:科別)
+(行政區)-[:RECORD_DEPARTMENT {類型:'醫院',數量:院所家數}]->(:科別)
 ```
 
 上圖人員／科別也有診所類型。統計年度取自關係。medicalYear取自醫療統計關係，無院所統計記錄時可為null。
@@ -98,6 +99,8 @@ API路徑、原欄位及JSON條件保持相容；新增欄位如下：
 - medicalYear：醫療資源統計年度。
 
 原 doctors/hospitalDoctors/clinicDoctors/doctorRate 仍為三類醫師合計，不改成只含西醫師。
-TC-08使用新增西醫師欄位驗證鳥松1072+24=1096、250.78，而非誤用三類合計。
+舊統計 TC-08 使用西醫師欄位，但指定的鳥松醫院 1072、診所 24、合計 1096 與資料庫西醫師不符，仍為未解決的快照差異，不能宣稱通過。
+既有盤點的西醫師為醫院 973、診所 8、合計 981；1072／24／1096 是西醫師、中醫師及牙醫師三類合計。此處澄清統計口徑，沒有變更測試預期或資料庫；詳見 [整合驗證紀錄](../verification/neo4j-integration-2026-10-15.md)。
 醫事人員總數仍取醫療院所統計.醫事人員總計，不以人員或科別數冒充。
-medicalfacilities是獨立院所明細資料庫，其MedicalFacility→Department匯入關係不屬於本次統計Schema；匯入功能未執行或更動。
+來源 `medicalfacilities` 的 `MedicalFacility→Department` 資料保留；整合後網站院所明細讀取 `neo4j` 的 `醫療院所→HAS_DEPARTMENT→科別`。
+實際院所科別與官方科別統計共用科別節點，但關係與口徑不同：院所詳情走 `HAS_DEPARTMENT`，官方統計走 `RECORD_DEPARTMENT`，不得互相加總或回填。

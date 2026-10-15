@@ -1,5 +1,7 @@
 # SPEC：行政區醫療院所查詢功能
 
+> 本文件保存 2026-10-12 的原始規格與驗收。2026-10-15 已依新的 Schema 整合規格改為在 neo4j 透過 HAS_FACILITY 查詢醫療院所，並支援實際科別；現行定義見 [整合 Schema](neo4j-integrated-schema.md) 與 [管理程序](neo4j-integration-operations.md)。本文件的舊資料庫分工及禁止合併條款不適用於本次已授權整合。
+
 **專案：** Advanced_DB_Project（臺灣醫療資源分析系統）  
 **功能名稱：** 行政區查詢  
 **狀態：** 已實作並通過功能驗收（2026-10-12）  

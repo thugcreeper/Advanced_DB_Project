@@ -1,15 +1,32 @@
 import { request } from "../../shared/api.js";
 import { initializeFacilityMap, hasLocation } from "./map.js";
 import { renderResults } from "./results.js";
+import { createFacilityDetail } from "./facility-detail.js";
 
 const get = id => document.getElementById(id);
 const county = get("county"), district = get("district"), type = get("facilityType");
+const department = get('facilityDepartment');
 const form = get("districtForm"), search = get("searchButton"), status = get("searchStatus");
-const map = initializeFacilityMap({ container: get("map"), status: get("mapStatus"), homeButton: get("resetMap"), count: get("markerCount") });
+const map = initializeFacilityMap({ container: get("map"), status: get("mapStatus"), homeButton: get("resetMap"), count: get("markerCount") }, selectFacility);
+const detail = createFacilityDetail({ onLocate: locateFacility, onClose: () => highlight(null) });
+function highlight(id) {
+  map.select(id);
+  for (const item of get("facilityResults").children) {
+    const selected = item.dataset.sourceId === id;
+    item.classList.toggle("is-selected", selected);
+    item.querySelector(".facility-open")?.setAttribute("aria-pressed", String(selected));
+  }
+}
+function selectFacility(row, opener) { highlight(row.sourceId); detail.open(row, opener); }
+function locateFacility(id) {
+  map.focusById(id);
+  if (window.matchMedia("(max-width: 760px)").matches) get("mapTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+}
 let counties = [], currentRequest, requestNumber = 0;
 let typeWasChosen = false;
 
 function clearResults(message) {
+  detail.close({ restoreFocus: false });
   get("facilityResults").replaceChildren();
   get("totalCount").textContent = "尚未搜尋";
   get("locationNotice").hidden = true;
@@ -56,6 +73,14 @@ district.addEventListener("change", () => {
   invalidate();
 });
 type.addEventListener("change", () => { typeWasChosen = true; invalidate(); });
+department.addEventListener('change',invalidate);
+async function loadDepartments() {
+  try {
+    const values=await request('/api/facilities/departments');
+    department.replaceChildren(new Option('不限',''),...values.map(value=>new Option(value,value)));
+    department.disabled=false;
+  } catch { get('departmentCatalogStatus').hidden=false; get('departmentCatalogStatus').textContent='院所科別暫時無法載入，仍可依行政區搜尋。'; }
+}
 form.addEventListener("submit", async event => {
   event.preventDefault();
   if (!county.value) { status.textContent = "請先選擇縣市。"; return; }
@@ -68,18 +93,15 @@ form.addEventListener("submit", async event => {
   get("totalCount").textContent = "—";
   get("resultsTitle").closest("section").setAttribute("aria-busy", "true");
   try {
-    const parameters = new URLSearchParams({ county: county.value, districtCode: district.value, type: type.value });
+    const parameters = new URLSearchParams({ county: county.value, districtCode: district.value, type: type.value, department: department.value });
     const result = await request(`/api/facilities?${parameters}`, { signal: currentRequest.signal });
     if (version !== requestNumber) return;
     if (!Array.isArray(result.facilities) || result.total !== result.facilities.length) throw new Error("API 回傳資料不完整，請重新搜尋。");
     const located = result.facilities.filter(hasLocation);
     map.update(located);
-    renderResults(get("facilityResults"), result.facilities, index => {
-      map.focus(index);
-      if (window.matchMedia("(max-width: 760px)").matches) get("mapTitle").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+    renderResults(get("facilityResults"), result.facilities, selectFacility, locateFacility);
     get("totalCount").textContent = `共 ${result.total.toLocaleString()} 筆`;
-    status.textContent = result.total ? `${result.county}${result.district || '・全部行政區'}・${type.selectedOptions[0].textContent}`
+    status.textContent = result.total ? `${result.county}${result.district || '・全部行政區'}・${type.selectedOptions[0].textContent}${result.department ? '・'+result.department : ''}`
       : result.districtCode ? "此行政區沒有符合條件的醫療院所" : "此縣市沒有符合條件的醫療院所";
     get("locationNotice").textContent = `無法定位 ${result.unlocatedCount} 筆院所（缺少有效座標或座標待複核），仍計入結果總數。`;
     get("locationNotice").hidden = result.unlocatedCount === 0;
@@ -101,3 +123,4 @@ form.addEventListener("submit", async event => {
 get("retryCatalog").addEventListener("click", loadCatalog);
 get("aboutButton").addEventListener("click", () => get("aboutDialog").showModal());
 loadCatalog();
+loadDepartments();

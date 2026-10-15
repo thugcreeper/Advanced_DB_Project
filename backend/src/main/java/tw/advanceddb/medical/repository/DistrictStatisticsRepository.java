@@ -33,7 +33,7 @@ public class DistrictStatisticsRepository {
                     coalesce(sum(CASE WHEN r.類型='診所' AND category.人員類別='西醫師' THEN r.數量 ELSE 0 END),0) AS clinicWesternDoctors,
                     coalesce(sum(CASE WHEN r.類型='診所' AND category.人員類別='中醫師' THEN r.數量 ELSE 0 END),0) AS clinicChineseDoctors,
                     coalesce(sum(CASE WHEN r.類型='診所' AND category.人員類別='牙醫師' THEN r.數量 ELSE 0 END),0) AS clinicDentists }
-            CALL { WITH d OPTIONAL MATCH (d)-[r:PROVIDE_DEPARTMENT]->(category:科別)
+            CALL { WITH d OPTIONAL MATCH (d)-[r:RECORD_DEPARTMENT]->(category:科別)
                 WHERE category.科別名稱=$specialty
                 RETURN coalesce(sum(CASE WHEN r.類型='醫院' THEN r.數量 ELSE 0 END),0) AS hospitalSpecialty,
                     coalesce(sum(CASE WHEN r.類型='診所' THEN r.數量 ELSE 0 END),0) AS clinicSpecialty }
@@ -54,7 +54,7 @@ public class DistrictStatisticsRepository {
             RETURN *
             """;
     public List<Map<String,Object>> rows(String personnel, String specialty, String scope) {
-        try (var session = connection.driver().session(SessionConfig.builder().withDatabase("neo4j")
+        try (var session = connection.driver().session(SessionConfig.builder().withDatabase(connection.database())
                 .withDefaultAccessMode(AccessMode.READ).build())) {
             return session.executeRead(tx -> tx.run(QUERY, Map.of("personnel", personnel, "specialty", specialty,
                     "scope", scope, "doctors", List.of("西醫師", "中醫師", "牙醫師"))).list(r -> r.asMap()),
@@ -62,11 +62,11 @@ public class DistrictStatisticsRepository {
         }
     }
     public Map<String,List<String>> categories() {
-        try (var session = connection.driver().session(SessionConfig.builder().withDatabase("neo4j")
+        try (var session = connection.driver().session(SessionConfig.builder().withDatabase(connection.database())
                 .withDefaultAccessMode(AccessMode.READ).build())) {
             return session.executeRead(tx -> {
                 var personnel = tx.run("MATCH (n:醫事人員類別) WHERE n.人員類別 IS NOT NULL RETURN DISTINCT n.人員類別 AS name ORDER BY name").list(r -> r.get("name").asString());
-                var specialties = tx.run("MATCH (n:科別) WHERE n.科別名稱 IS NOT NULL RETURN DISTINCT n.科別名稱 AS name ORDER BY name").list(r -> r.get("name").asString());
+                var specialties = tx.run("MATCH (n:科別) WHERE n.科別名稱 IS NOT NULL AND n._integrationOwner IS NULL RETURN DISTINCT n.科別名稱 AS name ORDER BY name").list(r -> r.get("name").asString());
                 return Map.of("personnel", personnel, "specialties", specialties);
             }, TransactionConfig.builder().withTimeout(Duration.ofSeconds(15)).build());
         }

@@ -1,7 +1,7 @@
 package tw.advanceddb.medical.model;
 import java.util.List;
 public record FacilitySearchResponse(String county, String districtCode, String district, String type,
-        long total, long unlocatedCount, long unassignedTotal, List<Facility> facilities) {
+        long total, long unlocatedCount, long unassignedTotal, List<Facility> facilities, String department) {
     public record Facility(String sourceId, String name, String type, String address, String phone,
             Double latitude, Double longitude, boolean locationReviewRequired) {
         public boolean hasLocation() {

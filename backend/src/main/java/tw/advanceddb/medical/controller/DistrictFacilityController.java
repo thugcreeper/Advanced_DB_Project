@@ -18,5 +18,9 @@ public class DistrictFacilityController {
     public List<DistrictCatalog.County> districts() { return catalog.counties(); }
     @GetMapping("/facilities")
     public FacilitySearchResponse facilities(@RequestParam String county, @RequestParam(required = false) String districtCode,
-            @RequestParam(required = false) String type) { return service.search(county, districtCode, type); }
+            @RequestParam(required = false) String type, @RequestParam(required=false) String department) { return service.search(county, districtCode, type, department); }
+    @GetMapping("/facilities/departments")
+    public List<String> departments() { return service.departments(); }
+    @GetMapping("/facilities/detail")
+    public tw.advanceddb.medical.model.FacilityDetail detail(@RequestParam String sourceId) { return service.detail(sourceId); }
 }

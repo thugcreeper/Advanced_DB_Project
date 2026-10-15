@@ -15,7 +15,6 @@
   <description>Taiwan medical resource analysis backend</description>
   <properties>
     <java.version>17</java.version>
-    <app.main-class>tw.advanceddb.medical.MedicalResourceApplication</app.main-class>
   </properties>
   <dependencies>
     <dependency>
@@ -52,7 +51,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
-          <mainClass>${app.main-class}</mainClass>
+          <mainClass>tw.advanceddb.medical.MedicalResourceApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>
