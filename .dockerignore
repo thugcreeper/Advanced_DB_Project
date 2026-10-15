@@ -1,0 +1,32 @@
+# Send only the inputs needed by the Dockerfile.
+**
+!Dockerfile
+!.dockerignore
+!backend/
+backend/*
+!backend/pom.xml
+!backend/src/
+backend/src/*
+!backend/src/main/
+!backend/src/main/**
+!pages/
+!pages/**
+!shared/
+!shared/**
+
+# Always exclude local artifacts and private material, including under allowed trees.
+**/node_modules
+**/.git
+**/target
+**/.maven-cache
+**/migration-local
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*[Cc]redentials*.txt
+**/*.dump
+**/*.backup
+**/*.log

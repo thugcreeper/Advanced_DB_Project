@@ -53,23 +53,107 @@ DATABASE_UNAVAILABLE／QUERY_FAILED 顯示「資料服務異常」，不宣稱 R
 提示有 role=status、polite live region、可鍵盤操作按鈕與 reduced-motion。
 既有院所搜尋等待期間保留列表與地圖；使用者主動變更條件時維持原本清除失效結果的語意。
 
-## Render 部署前
+## Docker 建置與本機驗證
 
-- 必要的 368 筆行政區目錄已納入 backend/src/main/resources/districts；建置不再依賴 Git 忽略的本機 data CSV。
-- Java 17；在 repo root 執行 backend/mvnw -f backend/pom.xml package（Windows 使用 mvnw.cmd）。
-- 啟動 java -jar backend/target/medical-resource-backend-0.0.1-SNAPSHOT.jar。
-- 環境設定：AURA_CONNECTION_URI、AURA_PASSWD、NEO4J_USERNAME、NEO4J_DATABASE，或完整 NEO4J_*。
-- PORT 使用 Render 注入值，本機預設 18080；SERVER_ADDRESS 預設 0.0.0.0。
-- Health check path 設 /api/health。
-- 同來源前後端不需 CORS；分離部署設定程序 CORS_ALLOWED_ORIGINS，逗號分隔明確來源（含協定與埠，不含路徑）。
-- CORS 預設不開放跨域，拒絕 wildcard；此 Spring 設定由程序環境注入，不由 dotenv 載入。
-- 分離部署在 pages/district/index.html 與 pages/query/index.html 加上或設定 meta name=api-base content=https://YOUR-BACKEND.onrender.com。
-- 不要在正式前端填本機網址，不把任何 Neo4j 憑證放入 meta。
-- 同一個會休眠的後端若也提供 HTML，首次導覽需等 Render 傳回頁面後 JavaScript 才能執行；如需在這段期間也顯示本專案提示，前端須另行靜態部署。
-- Render Free web service 的閒置與喚醒行為依實際方案核對；目前官方說明為閒置 15 分鐘後休眠，喚醒約一分鐘，不代表所有方案都休眠。
-- 本次沒有部署 Render，也沒有執行資料移轉、匯入、清空或 Schema 操作。
+Dockerfile 與建置 context 都位於 repo 根目錄。Maven 以 Java 17 編譯正式程式、前端與 368 筆行政區資源，再將 JAR 複製至 Java 17 JRE 執行階段。
+容器使用非 root 帳號；最終映像不含 Maven、原始碼或本機憑證。
+.dockerignore 採允許清單，只傳送 pom.xml、backend/src/main、pages、shared，並額外排除環境檔與私鑰。
+建置不查詢 Aura，也不需要任何資料庫密碼。映像建置會略過測試，應先在本機或 CI 執行本文下方的 Java／瀏覽器測試；略過不計入通過。
 
-官方資料：[Render Free](https://render.com/docs/free)、[Render Web Services](https://render.com/docs/web-services)、[Neo4j Java Driver](https://neo4j.com/docs/java-manual/current/connect/)。
+在 repo 根目錄執行：
+
+```powershell
+docker build -t advanced-db-medical:local .
+```
+
+先驗證不依賴資料庫的 HTTP 啟動：
+
+```powershell
+docker run --rm -d --name advanced-db-medical -p 127.0.0.1:18089:18080 advanced-db-medical:local
+Invoke-RestMethod http://127.0.0.1:18089/api/health
+docker stop advanced-db-medical
+```
+
+健康檢查應回傳 UP。未提供資料庫設定時，資料 API 回報資料服務異常是預期結果。
+前端入口為 /pages/district/index.html 或 /pages/query/index.html；根路徑 / 沒有首頁，不用它判斷部署是否成功。
+
+要測試 Aura，在本機另外建立 Git 忽略的 .env.render，只填以下四個欄位，值以已驗證成功的本機設定為準：
+
+```dotenv
+AURA_CONNECTION_URI=neo4j+s://YOUR-INSTANCE.databases.neo4j.io
+AURA_PASSWD=YOUR_DATABASE_PASSWORD
+NEO4J_USERNAME=YOUR_DATABASE_USER
+NEO4J_DATABASE=YOUR_DATABASE_NAME
+```
+
+此檔使用 Docker env-file 格式：每行 KEY=value，值不加引號、不加入行尾註解。
+不要直接將整份 backend/.env 傳給 --env-file；該檔可能保留舊本機 NEO4J_URI／NEO4J_PASSWORD，轉成程序環境後會優先於 Aura 變數。
+部署專用檔不包含這些舊值，也不將密碼放入 Dockerfile、build arguments 或前端。
+
+```powershell
+docker run --rm -d --name advanced-db-medical --env-file .env.render -p 127.0.0.1:18089:18080 advanced-db-medical:local
+Invoke-RestMethod http://127.0.0.1:18089/api/facilities/departments
+docker stop advanced-db-medical
+```
+
+可另用 -e PORT=10000 與 -p 127.0.0.1:18089:10000 驗證平台注入埠。
+EXPOSE 18080 只是本機預設埠說明，不會覆蓋 PORT。
+JAVA_TOOL_OPTIONS 預設限制 heap 為容器記憶體的 65%，並在記憶體耗盡時結束程序；可依實際方案在執行環境覆寫。
+
+## Render 部署設定
+
+1. 將包含 Dockerfile 的版本 push 至 GitHub，再於 Render 建立 Web Service 並連接此 repo。
+2. Runtime / Language 選 Docker；Root Directory 留空，Dockerfile Path 設 ./Dockerfile，Docker Build Context 設 .。
+3. Docker Command 留空，使用映像的 ENTRYPOINT；不需另外填 Maven Build Command 或 Java Start Command。
+4. 在 Environment 個別設定下表變數，勿上傳本機完整 .env，也勿設成建置參數。
+5. Health Check Path 設 /api/health。Render 注入 PORT，SERVER_ADDRESS 預設為 0.0.0.0。
+6. 部署完成後，先開 https://YOUR-BACKEND.onrender.com/api/health，再測試 /api/facilities/departments 與前端頁面。
+
+|環境變數|設定方式|
+|---|---|
+|AURA_CONNECTION_URI|目前已驗證的 neo4j+s:// URI|
+|AURA_PASSWD|目前資料庫密碼，僅填 Render Environment|
+|NEO4J_USERNAME|已實測可搭配該密碼的資料庫登入帳號|
+|NEO4J_DATABASE|已確認的實際資料庫名稱|
+|CORS_ALLOWED_ORIGINS|GitHub Pages 前端來源，例如 https://YOUR-ACCOUNT.github.io；無專案路徑或尾斜線|
+|PORT|使用 Render 注入值，不需自行固定|
+|SERVER_ADDRESS|可省略；預設 0.0.0.0|
+|JAVA_TOOL_OPTIONS|可省略，使用 Dockerfile 的記憶體設定；需要時完整覆寫|
+
+同來源前後端不需 CORS；分離部署可用逗號列出數個明確來源（含協定與必要埠，不含路徑）。
+CORS 預設不開放跨域，拒絕 wildcard；此 Spring 設定由程序環境注入，不由 dotenv 載入。
+
+## GitHub Pages 接到 Render
+
+取得 Render 的 HTTPS 網址後，分別在 pages/district/index.html 與 pages/query/index.html 的 head 設定或加入：
+
+```html
+<meta name="api-base" content="https://YOUR-BACKEND.onrender.com">
+```
+
+重新發布 GitHub Pages，並確認 Render 的 CORS_ALLOWED_ORIGINS 與實際 Pages 來源一致。
+前端設定只放後端 HTTP 網址，不放任何 Neo4j URI、帳號或密碼；目前尚未有正式 Render 網址，因此本次不修改前端 api-base。
+若直接使用 Render 提供的前端頁面，api-base 留空即可使用同來源 API。
+
+Render 若採會休眠的方案，首次 HTML 尚未送達時無法執行 JavaScript 提示；GitHub Pages 與後端分離後，頁面可先顯示，再透過共用連線 gate 等待後端恢復。
+方案閒置與喚醒行為應以實際方案確認；Free web service 官方目前說明為閒置 15 分鐘後休眠、喚醒約一分鐘。
+本次只新增容器設定與本機驗證，不部署 Render，不執行任何資料移轉、匯入、清空或 Schema 操作。
+
+官方資料：[Render Docker](https://render.com/docs/docker)、[Render Web Services](https://render.com/docs/web-services)、[Render Environment](https://render.com/docs/configure-environment-variables)、[Render Free](https://render.com/docs/free)、[Docker 多階段建置](https://docs.docker.com/build/building/multi-stage/)。
+
+## Docker 本機驗證紀錄（2026-10-15）
+
+- Docker 官方 build check 通過，無警告；Linux 多階段映像實際建置成功。
+- 依 Dockerfile 相同來源布局進行隔離 Maven 編譯與 JAR 資源檢查通過；建置時略過測試，不計作單元測試通過。
+- 實際匯出 Docker context 驗證允許清單：必要來源檔存在，.env、原始資料、備份、Git、target、Maven 快取及測試未納入。
+- 未注入資料庫設定的容器可回應 /api/health=UP；資料 API 回傳 DATABASE_UNAVAILABLE，與 HTTP 健康分離。
+- 非 root UID=999；runtime 沒有 Maven、build 原始碼目錄或 .env。
+- 前端三頁及共用連線模組回傳 200；22 縣市、368 行政區資源載入正確。
+- 執行時只注入四個 Aura 設定及 PORT=10000，成功查詢：實際院所科別 42、院所條件結果 2、官方統計科別 45、人員 27、Cypher 醫療院所總數 23,238。
+- 明確允許來源的 CORS preflight 通過，未列來源回傳 403。
+- 容器上限 512MiB；單次驗證觀察約 195MiB 使用量，並非所有查詢負載的上限保證。
+- 兩個驗證容器與隔離檢查產物均已清理；映像保留為 advanced-db-medical:local。
+- 尚未部署 Render；本次沒有執行資料庫寫入或 Schema 操作。
 
 ## 驗證命令
 
