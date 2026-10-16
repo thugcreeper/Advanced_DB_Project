@@ -9,19 +9,27 @@ const county = get("county"), district = get("district"), type = get("facilityTy
 const department = get('facilityDepartment');
 const form = get("districtForm"), search = get("searchButton"), status = get("searchStatus");
 const map = initializeFacilityMap({ container: get("map"), status: get("mapStatus"), homeButton: get("resetMap"), count: get("markerCount") }, selectFacility);
-const detail = createFacilityDetail({ onLocate: locateFacility, onClose: () => highlight(null) });
-function highlight(id) {
+const detail = createFacilityDetail({ onClose: () => {
+  get('facilityResults').querySelectorAll('.facility-open').forEach(button=>button.setAttribute('aria-expanded','false'));
+} });
+function highlight(id, reveal = false) {
   map.select(id);
   for (const item of get("facilityResults").children) {
     const selected = item.dataset.sourceId === id;
     item.classList.toggle("is-selected", selected);
     item.querySelector(".facility-open")?.setAttribute("aria-pressed", String(selected));
+    if(selected&&reveal){const list=get('facilityResults'),box=list.getBoundingClientRect(),row=item.getBoundingClientRect();if(row.top<box.top)list.scrollTop+=row.top-box.top;else if(row.bottom>box.bottom)list.scrollTop+=row.bottom-box.bottom;}
   }
 }
-function selectFacility(row, opener) { highlight(row.sourceId); detail.open(row, opener); }
-function locateFacility(id) {
-  map.focusById(id);
-  if (window.matchMedia("(max-width: 760px)").matches) get("mapTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+function selectFacility(row,opener) {
+  highlight(row.sourceId,true);
+  get('facilityResults').querySelectorAll('.facility-open').forEach(button=>button.setAttribute('aria-expanded',String(button.closest('li').dataset.sourceId===row.sourceId)));
+  detail.open(row,opener);map.ensureVisible(row.sourceId);
+}
+function locateFacility(row) {
+  if(!map.available){showSnackbar('地圖暫時無法使用，仍可查看院所詳情。',{error:true});return;}
+  detail.close({restoreFocus:false});highlight(row.sourceId);map.focusById(row.sourceId);
+  if(matchMedia('(max-width:760px)').matches)get('mapTitle').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});
 }
 let counties = [], currentRequest, requestNumber = 0;
 let typeWasChosen = false;
@@ -101,6 +109,7 @@ form.addEventListener("submit", async event => {
     if (version !== requestNumber) return;
     if (!Array.isArray(result.facilities) || result.total !== result.facilities.length) throw new Error("API 回傳資料不完整，請重新搜尋。");
     const located = result.facilities.filter(hasLocation);
+    detail.close({restoreFocus:false});
     map.update(located);
     renderResults(get("facilityResults"), result.facilities, selectFacility, locateFacility);
     get("totalCount").textContent = `共 ${result.total.toLocaleString()} 筆`;

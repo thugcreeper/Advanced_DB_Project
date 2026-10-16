@@ -5,7 +5,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>查詢分析｜臺灣醫療資源分析系統</title>
 <link rel="stylesheet" href="../../shared/vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css?v=20261013-ui-fix"><link rel="stylesheet" href="../../shared/hierarchical-selector.css?v=20261013-ui-fix">
+<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="../../shared/hierarchical-selector.css?v=20261013-ui-fix"><link rel="stylesheet" href="styles.css?v=20261017-unified-type">
 </head>
 <body>
 <header class="topbar"><strong>臺灣醫療資源分析系統</strong><button class="text-button" id="aboutButton" type="button">ⓘ 關於本專案</button></header>
@@ -64,10 +64,11 @@
 </div></details>
 <details class="filter-group" data-condition-group="categories">
 <summary style="list-style:none;display:flex"><span>醫療科別與醫事人員</span><span class="group-condition-count"></span><span class="group-state" aria-hidden="true"><span class="when-closed">展開</span><span class="when-open">收合</span></span></summary>
+<p class="category-rule">可先選範圍，再選科別或人員。範圍只套用所選科別／人員，並只列出所選數量大於 0 的行政區；科別依 OR／AND 匹配，人員條件另須同時符合。「醫院＋診所」以兩者合計計算。</p>
 <div class="filter-fields category-filter-fields">
 <label class="category-scope">人員／科別統計範圍<select id="scope"><option value="all">醫院＋診所</option><option value="hospital">醫院</option><option value="clinic">診所</option></select></label>
 <div class="filter-field">
-<span id="specialtyLabel">醫療科別</span>
+<span id="specialtyLabel">醫療科別（可複選）</span>
 <div id="specialtyPicker" class="hierarchical-selector">
 <input id="specialty" type="hidden" value="">
 <div class="selector-control">
@@ -75,13 +76,14 @@
 <button class="selector-clear" type="button" disabled title="清除醫療科別" aria-label="清除醫療科別">×</button>
 </div>
 <div id="specialtyPopup" class="selector-popup" popover="manual" role="dialog" aria-label="選擇醫療科別" hidden>
-<div class="selector-popup-heading"><strong>醫療科別</strong><button class="selector-close" type="button" title="關閉選單" aria-label="關閉醫療科別選單">×</button></div>
+<div class="selector-popup-heading"><strong>醫療科別</strong><button class="selector-close" type="button" title="完成選擇" aria-label="關閉醫療科別選單">完成</button></div>
 <label class="sr-only" for="specialtySearch">搜尋醫療科別</label><input id="specialtySearch" class="selector-search" type="search" autocomplete="off" placeholder="搜尋醫療科別">
 <button class="selector-option selector-unlimited" type="button" data-value="" aria-label="醫療科別不限">不限</button>
 <div class="selector-groups"></div><p class="selector-empty" role="status" hidden>沒有符合的選項</p>
 </div><p class="selector-notice" role="status" hidden></p>
 </div></div>
-<label>提供所選科別的院所家數下限<input id="specialtyMin" type="number" min="0" step="1" disabled placeholder="不限"></label>
+<label>匹配規則<select id="specialtyMatch" disabled><option value="or">符合任一科別（OR）</option><option value="and">每個科別都符合（AND）</option></select></label>
+<label>各所選科別的院所家數下限<input id="specialtyMin" type="number" min="1" step="1" disabled placeholder="至少 1"></label>
 <div class="filter-field">
 <span id="personnelLabel">醫事人員</span>
 <div id="personnelPicker" class="hierarchical-selector">
@@ -97,7 +99,7 @@
 <div class="selector-groups"></div><p class="selector-empty" role="status" hidden>沒有符合的選項</p>
 </div><p class="selector-notice" role="status" hidden></p>
 </div></div>
-<label>人員數下限<input id="personnelMin" type="number" min="0" step="1" disabled placeholder="不限"></label>
+<label>人員數下限<input id="personnelMin" type="number" min="1" step="1" disabled placeholder="至少 1"></label>
 </div></details>
 </div></details>
 <section class="form-section sorting-section" aria-labelledby="sortTitle">
@@ -110,12 +112,12 @@
 <div class="query-actions"><h3 class="action-heading">操作</h3><div class="query-commands"><button class="secondary" type="reset"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/rotate-ccw.svg#icon"></use></svg>清除條件</button><button id="searchButton" disabled class="primary" type="submit"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;max-width:18px;max-height:18px;flex-shrink:0" class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="../../shared/vendor/lucide/search.svg#icon"></use></svg>執行篩選</button></div></div></form>
 </section>
 <section class="results-panel" aria-labelledby="resultsTitle">
-<div class="panel-heading"><h2 id="resultsTitle">查詢結果 <span class="count">（共 <b id="resultCount">0</b> 筆）</span></h2><button id="downloadCsv" class="secondary compact" type="button">↓ 下載 CSV</button><button id="downloadCypherCsv" class="secondary compact" type="button" hidden disabled>↓ 下載 CSV</button></div>
+<div class="panel-heading"><h2 id="resultsTitle">查詢結果 <span class="count">（共 <b id="resultCount">0</b> 筆）</span></h2><button id="downloadCsv" class="secondary compact" type="button">↓ 匯出目前欄位 CSV</button><button id="downloadCypherCsv" class="secondary compact" type="button" hidden disabled>↓ 下載 CSV</button></div>
 <p id="queryModeLabel" class="result-source"></p>
 <div class="table-scroll"><table><thead id="statisticsHead"><tr><th scope="col">#</th><th scope="col"><button type="button" data-sort="name">地區 ↕</button></th><th scope="col"><button type="button" data-sort="averageIncome">平均所得<br>（千元）↕</button></th><th scope="col"><button type="button" data-sort="hospitalCount">醫院<br>家數 ↕</button></th><th scope="col"><button type="button" data-sort="clinicCount">診所<br>家數 ↕</button></th></tr></thead><tbody id="resultRows"></tbody></table></div>
 <div class="table-scroll" id="cypherTable" hidden><table><thead id="cypherHead"></thead><tbody id="cypherRows"></tbody></table></div>
 <p id="resultsEmpty" class="empty" role="status" hidden>沒有符合條件的資料。</p>
-<p class="data-notice">人口及醫療統計：114 年；所得統計：112 年。科別數為提供該科別的院所家數，不等同院所總數或醫師人數。</p>
+
 </section>
 </div>
 <section class="map-panel" aria-labelledby="mapTitle">

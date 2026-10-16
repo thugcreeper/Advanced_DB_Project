@@ -1,106 +1,100 @@
-# 行政區統計 API
+# 行政區統計篩選 API
 
-## 路徑
+更新：2026-10-16（Asia/Taipei）
 
-- `GET /api/districts/statistics/options`：實際數值範圍、資料庫類別及縣市／行政區。可用 `?county=新竹市` 取得該縣市範圍。GET 不使用 body。
-- `POST /api/districts/statistics/search`：JSON 條件查詢。省略縣市及行政區查全國；僅選縣市查全部行政區。
+## 路徑與完整流程
 
-## Request
+- GET `/api/districts/statistics/options?county=臺南市`：類別、地區與資料範圍提示。
+- POST `/api/districts/statistics/search`：完整 JSON 篩選。
+
+Controller 綁定 StatisticsFilter → Service 驗證地區、類別、scope、數值及排序 → Repository.search(parameters) → 參數化 Cypher 篩選 → Service 正規化／防禦檢查 → 前端依已套用條件產生表格與 CSV。
+結果查詢已不再先取得 368 區全量資料再只靠 Java 篩選；options 的範圍計算另行處理。
 
 ```json
 {
-  "county": "新竹市",
-  "income": { "min": 100 },
-  "population": { "min": 1000, "max": 300000 },
-  "area": { "min": 1.5, "max": 100 },
-  "hospitals": { "max": 5 },
-  "clinics": { "min": 0 },
-  "personnel": { "category": "護理師", "scope": "all", "count": { "min": 0 } },
-  "specialty": { "category": "內科", "scope": "all", "count": { "min": 0 } },
-  "sort": [{ "field": "income", "direction": "desc" }]
+  "county": "臺南市",
+  "districtCode": "",
+  "specialties": [
+    {"category": "中醫婦科", "scope": "all", "count": {"min": 1}},
+    {"category": "內科", "scope": "all", "count": {"min": 1}}
+  ],
+  "specialtyMatch": "or",
+  "personnel": {"category": "護理師", "scope": "all", "count": {"min": 1}},
+  "income": {"min": 0},
+  "population": {"min": 1, "max": 300000},
+  "area": {"min": 0, "max": 100},
+  "hospitals": {"max": 10},
+  "clinics": {"min": 0},
+  "sort": [{"field": "income", "direction": "desc"}]
 }
 ```
 
-`districtCode` 可指定單區，但必須同時指定該區所屬縣市。代碼為字串。
-所有 range 的 min/max 皆可省略，上下界包含等號；不同條件採 AND。`0` 是條件，不是未填。
-人口、院所、人員及科別數條件必須非負整數；所得／面積可用非負小數。
-下限不得大於上限，非數字／非有限數值會回400。超出資料範圍但合法的條件可回空結果。
-scope 為 `hospital`、`clinic`、`all`；若同時選人員和科別，兩者使用相同scope。
-未選人員／科別時所選數值為null，不假裝為0。
+範例展示可用欄位，不代表預設同時套用這些條件。縣市／行政區省略表示不限制；行政區代碼必須屬於指定縣市。地區代碼為字串。
 
-排序最多三欄，允許 `name,income,population,area,hospitalCount,clinicCount,staff,staffRate,doctors,doctorRate,westernDoctors,chineseDoctors,dentists,westernDoctorRate,personnel,specialty`。
-方向只接受asc/desc。缺值在升降冪皆排最後；沒有自動加入次要排序。
+## 科別與人員規則
+
+specialties 最多 45 個不同的有效政府統計科別；每項提供 category、scope 及可選 count.min/max。拒絕 null、重複、未知類別及不一致的 scope。
+舊單科 specialty 仍接受，但不能與非空 specialties 同時提供。前端統一送 specialties。
+
+scope 為 hospital／clinic／all。all 是同一科別的醫院＋診所合計，不要求行政區同時有兩種院所。
+所選科別／人員的所選範圍數量必須大於 0，即使未填 min 或填 min=0 仍會排除零值；更高下限繼續生效。
+
+- specialtyMatch=or：任一科別符合數量條件即列出；未符合的其他已選科別仍回傳自己的 0／分項值。
+- specialtyMatch=and：同一行政區每個所選科別都符合。
+- 人員條件與科別條件採 AND；人員未選不套用，也不顯示所選人員欄。
+- AND 不表示同一家院所提供所有科別；不同科別不相加為不重複院所數。
+
+科別只讀 RECORD_DEPARTMENT 的 r.類型、r.數量；人員只讀 RECORD_PERSONNEL 的人員類別、r.類型、r.數量。HAS_DEPARTMENT 不參與政府科別統計。
+
+## Cypher 篩選與排序
+
+地區先在 MATCH 後以 $county、$districtCode 篩選。各統計關係族分開聚合，避免交叉相乘。
+每個已選科別分別聚合醫院與診所數，依 $scope 得到 selected，再用 any/all 判斷 $specialtyMatch。人員及所得、人口、面積、院所數範圍也在 Cypher WHERE 套用。
+
+所有使用者值均為參數；ORDER BY 僅由服務端白名單的欄位與 asc/desc 組成，最多三項，缺值置後，最後以行政區名稱穩定排序。多科別的 specialty 排序以首個所選科別 selected 為準，前端明示該名稱，不使用跨科別總和。
+範圍 min/max 均包含等號；人口、家數、人數須非負整數，所得／面積可為非負小數。合法但超出資料範圍的條件可回空結果，不以目前資料 min/max 限制可輸入的合法值。
+
+查詢使用 Neo4jConnection 的 NEO4J_DATABASE、唯讀 session、15 秒交易逾時。沒有資料寫入、Schema 變動或重新匯入。
 
 ## Response
 
+回傳 total、districts、scope、appliedFilters 與 source。total 為實際結果筆數，未分頁。
+
+每列 specialties 為分項陣列，例如：
+
 ```json
-{
-  "total": 3,
-  "scope": "all",
-  "districts": [
-    {
-      "code": "1205", "county": "新竹市", "name": "香山區",
-      "income": 1006, "averageIncome": 1006,
-      "population": 79606, "area": 54.8491,
-      "hospitalCount": 0, "clinicCount": 16,
-      "staff": 56, "staffRate": 7.03,
-      "doctors": 23, "doctorRate": 2.89,
-      "incomeYear": 112, "populationYear": 114
-    }
-  ]
-}
+{"category":"中醫婦科","hospital":1,"clinic":4,"total":5,"selected":5}
 ```
 
-以上只展示其中一筆及部分欄位，並非完整陣列。另保留密度、所得中位數、醫院／診所人力與所選人員／科別各自數值。
-每萬人口值四捨五入至兩位，零／缺人口回null。醫師僅含西醫師、中醫師、牙醫師。
-缺所得、人口、面積不改成0；缺醫院／診所統計或所選關係按已確認規則視為0。
+每科保留 hospital、clinic、total 與所選 scope 的 selected，沒有跨科別合計欄。分項無數量記錄為 null，實際 0 記錄為 0；任一分項缺少時 total 為 null，不從已知分項推測完整合計。selected 沿用所選範圍內已知正數匹配，OR／AND、門檻及排序規則保持不變。舊 specialty、hospitalSpecialty、clinicSpecialty 數值代表首個所選科別，供既有單科呼叫及明確的首科排序使用。
+appliedFilters 回傳後端實際接受的地區、scope、科別、匹配、人員、範圍及排序，供查證及呈現；不含任何連線設定。
 
-options 回傳 `bounds`（income/population/area/hospitalCount/clinicCount，各有min/max）、`personnel`、`specialties`、`counties`。
-人口／所得年度分別保留，不合併成年份。科別數不能解讀為醫師人數或無醫療服務。
+personnelStatistics 回傳本次所選人員 category、hospital、clinic、total，直接由 RECORD_PERSONNEL 的類型／數量聚合；無數量記錄維持 null，實際 0 不變，兩類均已知才有完整 total。personnel 仍為所選範圍的已知紀錄數，用於原有匹配與排序；它不替代完整分項合計。
 
-## 錯誤與安全
+完整指標位於 Modal 的「行政區概況」，主要表格不固定顯示全套指標。缺所得／人口／面積不填 0。
 
-- 400 `INVALID_FILTER`：輸入或選項無效。
-- 503 `DATABASE_UNAVAILABLE`：連線失敗、設定或資料問題、資料庫查詢逾時。
-- 500 `QUERY_FAILED`：其他查詢錯誤。不回傳連線密碼或內部例外。
+## 前端與 CSV
 
-統計、院所搜尋／詳情與唯讀 Cypher 均由 `Neo4jConnection` 讀取同一個 `NEO4J_DATABASE`，正式設定為 `neo4j`；不再各自硬編碼資料庫名稱。
-來源庫 `medicalfacilities` 的資料保留，但網站不讀取它，舊匯入工具亦已移除。網站使用 `NEO4J_URI`、`NEO4J_USERNAME`、`NEO4J_PASSWORD` 與必填的 `NEO4J_DATABASE`，缺少資料庫設定會回報設定錯誤，不再保留舊值特例。
-統計Cypher為固定、參數化唯讀查詢，各關係族分開聚合，交易逾時15秒。
-目前368區全量聚合後，在Java套用條件與排序，total為實際符合筆數；不分頁、不將顯示筆數假充總數。
-此統計 API 不接受任意 Cypher 或 SQL 字串；網站的唯讀 Cypher 編輯器使用獨立的 `/api/cypher/query`。人口／面積範圍每次讀取真實統計，不使用硬編碼上下界。
-統計 API 不寫入 Neo4j。統計篩選不偽造行政區代表座標；Cypher 結果可依行政區載入實際院所位置，行政區查詢頁亦可搜尋及定位實際院所。
+科別使用真正複選、已選標籤可個別移除，支援搜尋、鍵盤與完成選擇。範圍可先選；切換縣市保留科別、人員與使用者數值界限，僅更新範圍提示及重建有效行政區選單。修改條件取消舊請求，避免舊回應覆蓋。表單暫存狀態與成功結果分開；未重新執行、執行中或執行失敗，都保留上次成功結果與 CSV。只有新查詢成功，才替換 columns、列資料及 appliedFilters 快照。
 
-## 測試頁面
+單科 all：行政區、該科醫院、該科診所、合計。單科單類型：行政區、該科所選類型。
+多科：固定一欄顯示「有統計科數／所選科數」摘要，不跨科相加；人員、其他數值條件依需要顯示精簡摘要。每列只有一個「查看詳細資料」按鈕，沒有表格內新增明細列的流程。
 
-推薦由後端開啟 `/pages/query/index.html`。不要直接以file協定開HTML。
-正式 Spring Boot 預設入口為 `http://127.0.0.1:18080/pages/query/index.html`；個別測試預覽的連接埠並非正式啟動要求。
-原有API base設定仍可用於分離前後端部署；普通Live Server若沒有指定API base會向自己的port查詢，不能取代後端。
+詳細資料使用 document.body 下的原生 dialog.showModal()，固定相對 viewport 置中、桌面 82vw／最大 1180px、最大 85dvh。提供半透明遮罩、右上關閉、Escape、遮罩關閉、背景捲動鎖定、明確 Tab／Shift+Tab 焦點循環及關閉後回原按鈕。內容只在 Modal 內捲動；手機保留 12px 邊距。
 
+分頁透過條件式定義建立，每次開啟重建適用的分頁及面板，預設「行政區概況」。固定顯示概況；成功查詢選取至少一科才建立「科別統計」，選取人員才建立「醫事人員統計」。未適用的分頁不留下隱藏 DOM／selected 狀態，不建立「本次未選擇」空面板。左右鍵、Home／End 依目前分頁數循環。
 
-## 正式 Schema（重構後）
+概況分為人口與土地、醫療資源、醫事人員、所得與統計年度；每項為名稱／數值／單位，分類標題有左側強調線。桌面兩個自然寬度資料項目一列，手機單欄；交錯背景與細框線，名稱 21px、數值 27px，不再使用獨立指標卡片。字級維持前次放大，整數千分位、面積最多 4 位、比率最多 2 位，缺值為「未提供」。
 
-```cypher
-(行政區:鄉鎮區碼與名稱)-[所得年度:RECORD_INCOME {統計年:112}]->(:綜合所得)
-(行政區)-[人口年度:RECORD_POPULATION_AND_AREA {統計年:114}]->(:人口與土地)
-(行政區)-[醫療年度:RECORD_MEDICAL_FACILITIES {統計年:114}]->(:醫療院所統計)
-(行政區)-[:RECORD_PERSONNEL {類型:'醫院',數量:人數}]->(:醫事人員類別)
-(行政區)-[:RECORD_DEPARTMENT {類型:'醫院',數量:院所家數}]->(:科別)
-```
+科別及人員皆以名稱／醫院／診所／合計表格呈現，分別讀取 specialties、personnelStatistics。單一 scope 篩選仍保留完整分項並標示範圍。沒有關係記錄的分項及無法確認的總數顯示「未提供」，不推算、不反推、不把缺值當 0。
 
-上圖人員／科別也有診所類型。統計年度取自關係。medicalYear取自醫療統計關係，無院所統計記錄時可為null。
-院所總數只取醫療院所統計.院所家數，不能加總科別院所家數。
-API路徑、原欄位及JSON條件保持相容；新增欄位如下：
+Modal 使用已完成查詢及 appliedFilters 的快照，不讀取表單暫存值，開關／分頁不發送 API；開不同區重建內容並回概況。成功新查詢才替換舊資料、清除不再適用的分頁。
 
-- hospitalWesternDoctors、clinicWesternDoctors、westernDoctors：醫院／診所／合計西醫師。
-- hospitalChineseDoctors、clinicChineseDoctors、chineseDoctors：醫院／診所／合計中醫師。
-- hospitalDentists、clinicDentists、dentists：醫院／診所／合計牙醫師。
-- westernDoctorRate：每萬人口西醫師數（round(10000.0 * westernDoctors / population, 2)），零／缺人口為null。
-- medicalYear：醫療資源統計年度。
+CSV 沿用 columns/value 與目前排序，不匯出操作欄。主表的多科摘要已縮短，CSV 同一欄仍完整保留所有所選科別的醫院／診所／合計及換行，不退化為只匯出科數；多項數值條件也保留實值。沒有提供混淆的完整 25 欄匯出。
 
-原 doctors/hospitalDoctors/clinicDoctors/doctorRate 仍為三類醫師合計，不改成只含西醫師。
-舊統計 TC-08 使用西醫師欄位，但指定的鳥松醫院 1072、診所 24、合計 1096 與資料庫西醫師不符，仍為未解決的快照差異，不能宣稱通過。
-既有盤點的西醫師為醫院 973、診所 8、合計 981；1072／24／1096 是西醫師、中醫師及牙醫師三類合計。此處澄清統計口徑，沒有變更測試預期或資料庫；詳見 [整合驗證紀錄](../verification/neo4j-integration-2026-10-15.md)。
-醫事人員總數仍取醫療院所統計.醫事人員總計，不以人員或科別數冒充。
-來源 `medicalfacilities` 的 `MedicalFacility→Department` 資料保留；整合後網站院所明細讀取 `neo4j` 的 `醫療院所→HAS_DEPARTMENT→科別`。
-實際院所科別與官方科別統計共用科別節點，但關係與口徑不同：院所詳情走 `HAS_DEPARTMENT`，官方統計走 `RECORD_DEPARTMENT`，不得互相加總或回填。
+## 錯誤及資料口徑
+
+400 INVALID_FILTER：無效地區、選項、範圍、匹配或排序。
+503 DATABASE_UNAVAILABLE：資料服務無法連線／執行；500 QUERY_FAILED：其他非預期錯誤。伺服器安全診斷不輸出密碼或 URI。
+人口及相關醫療統計 114 年、所得 112 年；科別關係本身不補造年度，依原始來源說明。
+政府統計不是已確認的個別院所名單，不能用此 API 推論哪家院所目前提供某科。

@@ -1,3 +1,4 @@
+import { statisticsColumns } from './columns.js';
 import { showSnackbar } from '../../shared/snackbar.js';
 import { initializeEditor } from "./editor.js";
 import { initializeModes } from "./modes.js";
@@ -9,23 +10,12 @@ import { initializeCypherResults } from "./cypher-results.js";
 import { initializeCypherMap } from "./cypher-map.js";
 
 const get = id => document.getElementById(id);
-const columns = [
-  ['name','地區'], ['averageIncome','平均所得（千元）'], ['population','人口（114年）'], ['area','面積（平方公里）'],
-  ['hospitalCount','醫院家數'], ['clinicCount','診所家數'], ['staff','醫事人員總數'], ['staffRate','每萬人口醫事人員數'],
-  ['doctors','醫師總數'], ['doctorRate','每萬人口醫師數'], ['personnel','所選人員數'], ['specialty','所選科別院所家數'],
-  ['hospitalWesternDoctors','醫院西醫師'], ['clinicWesternDoctors','診所西醫師'], ['westernDoctors','西醫師合計'], ['westernDoctorRate','每萬人口西醫師數'],
-  ['hospitalChineseDoctors','醫院中醫師'], ['clinicChineseDoctors','診所中醫師'], ['chineseDoctors','中醫師合計'],
-  ['hospitalDentists','醫院牙醫師'], ['clinicDentists','診所牙醫師'], ['dentists','牙醫師合計'], ['medicalYear','醫療統計年度'],
-  ['incomeYear','所得年度'], ['populationYear','人口年度'],
-].map(([key,label]) => ({ key,label }));
-const header = document.createElement('tr'); const first = document.createElement('th'); first.textContent = '#'; header.append(first);
-columns.forEach(column => { const th = document.createElement('th'), button = document.createElement('button'); button.type = 'button'; button.dataset.sort = column.key; button.textContent = column.label + ' ↕'; th.append(button); header.append(th); });
-get('statisticsHead').replaceChildren(header);
-const results = initializeResults({ body: get('resultRows'), count: get('resultCount'), empty: get('resultsEmpty'), download: get('downloadCsv'), sortButtons: [...header.querySelectorAll('button')], onSort: () => {}, columns });
+const results=initializeResults({body:get('resultRows'),count:get('resultCount'),empty:get('resultsEmpty'),download:get('downloadCsv'),head:get('statisticsHead'),numbered:false,columns:[]});
 function status(text, error = false) { get('queryModeLabel').textContent = text; get('queryModeLabel').setAttribute('role', error ? 'alert' : 'status'); }
 const cypherResults = initializeCypherResults({ head: get('cypherHead'), body: get('cypherRows'), count: get('resultCount'), empty: get('resultsEmpty') });
-let filters, editor, map, mode = 'builder';
+let filters, editor, map, mode = 'builder', lastStatisticsStatus = '';
 function clear() {
+  lastStatisticsStatus = '';
   results.update([], { resetSort: true }); cypherResults.update(); get('downloadCypherCsv').disabled = true;
   get('resultsEmpty').hidden = true; map?.clear();
 }
@@ -40,14 +30,15 @@ get('downloadCypherCsv').addEventListener('click', () => {cypherResults.download
 filters = initializeStatisticsFilters({ form: get('builderPane'),
   options: county => statisticsRequest('/api/districts/statistics/options' + (county ? '?county=' + encodeURIComponent(county) : '')),
   request: statisticsRequest,
-  onStart: () => { clear(); get('builderPane').setAttribute('aria-busy','true'); status('查詢中…'); },
-  onSuccess: data => {
+  onStart: () => { get('builderPane').setAttribute('aria-busy','true'); status(lastStatisticsStatus ? lastStatisticsStatus+'・正在查詢新條件…' : '查詢中…'); },
+  onSuccess: (data,body) => {
+    results.setColumns(statisticsColumns(body,data.appliedFilters));
     showSnackbar(data.districts.length?`查詢完成，找到 ${data.districts.length} 個行政區。`:'沒有符合條件的行政區，請調整篩選條件。');get('builderPane').setAttribute('aria-busy','false'); results.update(data.districts, { resetSort: true });
-    const selected = ['personnel','specialty'].map(id => get(id).value).filter(Boolean).join('、');
-    status(`Neo4j 統計・${({ all: '醫院＋診所', hospital: '醫院', clinic: '診所' })[data.scope || 'all']}${selected ? '・' + selected : ''}`);
+    const selected=[...(data.appliedFilters?.specialties||body.specialties?.map(s=>s.category)||[]),data.appliedFilters?.personnel||body.personnel?.category||''].filter(Boolean).join('、');
+    lastStatisticsStatus = `政府行政區統計（非院所名單）・${({ all: '醫院＋診所', hospital: '醫院', clinic: '診所' })[data.scope || 'all']}${selected ? '・' + selected : ''}${(body.specialties?.length||0)>1?'・'+(body.specialtyMatch==='and'?'每科都符合 AND':'任一科符合 OR'):''}`; status(lastStatisticsStatus);
   },
-  onChange: () => { get('builderPane').setAttribute('aria-busy','false'); clear(); status('條件已變更，請重新查詢。'); },
-  onError: error => { showSnackbar(error.message,{error:true});get('builderPane').setAttribute('aria-busy','false'); clear(); status(error.message, true); },
+  onChange: () => { get('builderPane').setAttribute('aria-busy','false'); status(lastStatisticsStatus ? lastStatisticsStatus+'・條件已變更，顯示上次查詢結果。' : '條件已變更，請執行查詢。'); },
+  onError: error => { showSnackbar(error.message,{error:true});get('builderPane').setAttribute('aria-busy','false'); status(error.message+(lastStatisticsStatus?'（保留上次查詢結果）':''), true); },
 });
 get('aboutButton').addEventListener('click', () => get('aboutDialog').showModal());
 initializeModes({ tabs: [...document.querySelectorAll('.mode-tab')], panes: [...document.querySelectorAll('.mode-pane')], onChange: next => {

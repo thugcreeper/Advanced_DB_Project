@@ -69,7 +69,7 @@ test('missing data disables actions, no empty calendar or fabricated statuses, a
     await open(page);assert.equal(await page.locator('.clinic-day').count(),0);
     assert.match(await page.locator('#detailContent').textContent(),/暫無診療時間資料/);
     assert.equal(await page.locator('#detailCall').getAttribute('aria-disabled'),'true');assert.equal(await page.locator('#detailCall').getAttribute('href'),null);
-    assert.equal(await page.locator('#detailLocate').isDisabled(),true);assert.equal(await page.locator('#detailGoogle').isVisible(),false);
+    assert.equal(await page.locator('#detailLocate').count(),0);assert.equal(await page.locator('#detailGoogle').isVisible(),false);
     assert.equal(await page.locator('#detailContent img').count(),0);assert.match(await page.locator('.detail-notes').textContent(),/<img/);
     assert.ok(!/營業中|設有急診|評價|undefined|null/.test(await page.locator('#facilityDetail').textContent()));
     mode='invalid';await page.locator('.facility-open').nth(1).click();await page.locator('#detailContent').waitFor({state:'visible'});

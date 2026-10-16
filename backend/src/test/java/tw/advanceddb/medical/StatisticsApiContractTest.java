@@ -24,7 +24,7 @@ class StatisticsApiContractTest {
     @MockitoBean DistrictStatisticsRepository repository;
     @BeforeEach void data() {
         when(repository.categories()).thenReturn(Map.of("personnel",List.of("護理師"),"specialties",List.of("內科")));
-        when(repository.rows(anyString(),anyString(),anyString())).thenReturn(List.of(row("新竹市東區",200,10000),row("新竹市北區",100,20000),row("新竹市香山區",100,1000),row("嘉義市東區",null,0)));
+        when(repository.search(anyMap())).thenReturn(List.of(row("新竹市東區",200,10000),row("新竹市北區",100,20000),row("新竹市香山區",100,1000),row("嘉義市東區",null,0)));
     }
     private static Map<String,Object> row(String name,Integer income,Integer population) {
         Map<String,Object> row = new HashMap<>();
@@ -33,7 +33,7 @@ class StatisticsApiContractTest {
         row.put("hospitalDoctors",1L); row.put("clinicDoctors",2L);
         row.put("hospitalWesternDoctors",1L); row.put("clinicWesternDoctors",2L);
         row.put("hospitalChineseDoctors",0L); row.put("clinicChineseDoctors",0L);
-        row.put("hospitalDentists",0L); row.put("clinicDentists",0L); row.put("personnel",2L); row.put("specialty",1L);
+        row.put("hospitalDentists",0L); row.put("clinicDentists",0L); row.put("personnel",2L); row.put("specialty",1L); row.put("specialties",List.of(Map.of("category","內科","hospital",1L,"clinic",0L,"total",1L,"selected",1L)));
         return row;
     }
     private org.springframework.test.web.servlet.ResultActions search(String body) throws Exception {
@@ -51,7 +51,7 @@ class StatisticsApiContractTest {
     }
     @Test void invalidInputsFailBeforeReadingDatabase() throws Exception {
         for (String body:List.of("{\"population\":{\"min\":20000,\"max\":100}}","{\"population\":{\"min\":-1}}","{\"population\":{\"min\":0.5}}","{\"income\":{\"min\":\"bad\"}}","{\"sort\":[{\"field\":\"DELETE\",\"direction\":\"asc\"}]}")) search(body).andExpect(status().isBadRequest());
-        verify(repository,never()).rows(anyString(),anyString(),anyString());
+        verify(repository,never()).search(anyMap());
     }
     @Test void unlistedOriginIsRejected() throws Exception {
         mvc.perform(options("/api/districts/statistics/search").header("Origin","https://untrusted.example")
@@ -83,21 +83,21 @@ class StatisticsApiContractTest {
     @Test void categoryAndScopeAreValidatedAndPassedAsParameters() throws Exception {
         search("{\"personnel\":{\"category\":\"護理師\",\"scope\":\"clinic\",\"count\":{\"min\":2}}}")
             .andExpect(status().isOk()).andExpect(jsonPath("$.districts[0].staff").value(7));
-        verify(repository).rows("護理師","","clinic");
+        verify(repository).search(argThat(parameters->"護理師".equals(parameters.get("personnel"))&&"clinic".equals(parameters.get("scope"))&&Double.valueOf(2).equals(parameters.get("personnelMin"))));
         search("{\"personnel\":{\"category\":\"不存在\"}}").andExpect(status().isBadRequest());
     }
     @Test void failureIsNotEmptyResultsAndDetailsStayPrivate() throws Exception {
-        when(repository.rows(anyString(),anyString(),anyString())).thenThrow(new IllegalStateException("private secret"));
+        when(repository.search(anyMap())).thenThrow(new IllegalStateException("private secret"));
         search("{}").andExpect(status().isServiceUnavailable()).andExpect(jsonPath("$.code").value("DATABASE_UNAVAILABLE"))
             .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("private secret"))));
     }
-    @Test void distinctDoctorCategoriesDoNotChangeLegacyTotalMeaning() throws Exception {
+    @Test void distinctDoctorCategoriesKeepThreeCategoryTotalMeaning() throws Exception {
         var doctors=row("新竹市東區",100,10000);
         doctors.put("hospitalWesternDoctors",5L); doctors.put("clinicWesternDoctors",2L);
         doctors.put("hospitalChineseDoctors",3L); doctors.put("clinicChineseDoctors",1L);
         doctors.put("hospitalDentists",4L); doctors.put("clinicDentists",2L);
         doctors.put("hospitalDoctors",12L); doctors.put("clinicDoctors",5L);
-        when(repository.rows(anyString(),anyString(),anyString())).thenReturn(List.of(doctors));
+        when(repository.search(anyMap())).thenReturn(List.of(doctors));
         search("{}").andExpect(status().isOk()).andExpect(jsonPath("$.districts[0].doctors").value(17))
             .andExpect(jsonPath("$.districts[0].westernDoctors").value(7)).andExpect(jsonPath("$.districts[0].chineseDoctors").value(4))
             .andExpect(jsonPath("$.districts[0].dentists").value(6)).andExpect(jsonPath("$.districts[0].westernDoctorRate").value(7));
@@ -105,10 +105,59 @@ class StatisticsApiContractTest {
     @Test void missingPopulationAreaAndTotalsAreHandledWithoutInventingValues() throws Exception {
         var missing = row("新竹市東區",null,null);
         missing.put("area",null); missing.put("hospitalStaff",null); missing.put("clinicStaff",null);
-        when(repository.rows(anyString(),anyString(),anyString())).thenReturn(List.of(missing));
+        when(repository.search(anyMap())).thenReturn(List.of(missing));
         search("{}").andExpect(status().isOk()).andExpect(jsonPath("$.total").value(1))
             .andExpect(jsonPath("$.districts[0].population").doesNotExist()).andExpect(jsonPath("$.districts[0].area").doesNotExist())
             .andExpect(jsonPath("$.districts[0].staffRate").doesNotExist()).andExpect(jsonPath("$.districts[0].staff").value(0));
         search("{\"area\":{\"min\":0}}").andExpect(status().isOk()).andExpect(jsonPath("$.total").value(0));
+    }
+
+    @Test void selectedCategoryExcludesZeroAndMissingCountsInEveryScope() throws Exception {
+        var zero=row("新竹市東區",200,10000);zero.put("specialty",0L);zero.put("specialties",List.of(Map.of("category","內科","selected",0)));
+        var positive=row("新竹市北區",100,20000);positive.put("specialty",2L);positive.put("specialties",List.of(Map.of("category","內科","selected",2)));
+        var missing=row("新竹市香山區",100,1000);missing.remove("specialty");missing.put("specialties",List.of());
+        when(repository.search(anyMap())).thenReturn(List.of(zero,positive,missing));
+        for(String scope:List.of("all","hospital","clinic")) {
+            String body="{\"county\":\"新竹市\",\"specialty\":{\"category\":\"內科\",\"scope\":\""+scope+"\"}}";
+            search(body).andExpect(status().isOk()).andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.districts[0].name").value("北區"));
+        }
+        search("{\"specialty\":{\"category\":\"內科\",\"count\":{\"min\":0}}}")
+            .andExpect(status().isOk()).andExpect(jsonPath("$.total").value(1));
+        search("{\"specialty\":{\"category\":\"內科\",\"count\":{\"min\":3}}}")
+            .andExpect(status().isOk()).andExpect(jsonPath("$.total").value(0));
+        search("{}").andExpect(status().isOk()).andExpect(jsonPath("$.total").value(3));
+    }
+    @Test void bothSelectedCategoriesMustBePositiveButHospitalPresenceIsNotRequired() throws Exception {
+        var both=row("新竹市東區",200,10000);
+        var noPersonnel=row("新竹市北區",100,20000);noPersonnel.put("personnel",0L);
+        var noSpecialty=row("新竹市香山區",100,1000);noSpecialty.put("specialty",0L);noSpecialty.put("specialties",List.of(Map.of("category","內科","selected",0)));
+        when(repository.search(anyMap())).thenReturn(List.of(both,noPersonnel,noSpecialty));
+        search("{\"personnel\":{\"category\":\"護理師\",\"scope\":\"all\"},\"specialty\":{\"category\":\"內科\",\"scope\":\"all\"}}")
+            .andExpect(status().isOk()).andExpect(jsonPath("$.total").value(1))
+            .andExpect(jsonPath("$.districts[0].hospitalCount").value(0));
+        search("{\"personnel\":{\"category\":\"護理師\"}}")
+            .andExpect(status().isOk()).andExpect(jsonPath("$.total").value(2));
+    }
+
+    @Test void multipleDepartmentsApplyOrAndWithoutAddingDepartmentCounts() throws Exception {
+        when(repository.categories()).thenReturn(Map.of("personnel",List.of("護理師"),"specialties",List.of("內科","外科")));
+        var one=row("新竹市東區",200,10000);one.put("specialties",List.of(Map.of("category","內科","selected",2),Map.of("category","外科","selected",0)));
+        var both=row("新竹市北區",100,20000);both.put("specialties",List.of(Map.of("category","內科","selected",1),Map.of("category","外科","selected",3)));
+        var none=row("新竹市香山區",100,1000);none.put("specialties",List.of(Map.of("category","內科","selected",0),Map.of("category","外科","selected",0)));
+        when(repository.search(anyMap())).thenReturn(List.of(one,both,none));
+        String parts="\"specialties\":[{\"category\":\"內科\",\"scope\":\"clinic\"},{\"category\":\"外科\",\"scope\":\"clinic\"}]";
+        search("{"+parts+",\"specialtyMatch\":\"or\"}").andExpect(status().isOk()).andExpect(jsonPath("$.total").value(2));
+        search("{"+parts+",\"specialtyMatch\":\"and\"}").andExpect(status().isOk()).andExpect(jsonPath("$.total").value(1));
+        var params=org.mockito.ArgumentCaptor.forClass(Map.class);verify(repository,atLeastOnce()).search(params.capture());
+        assertThat(params.getValue()).containsEntry("scope","clinic").containsEntry("specialtyMatch","and");
+        assertThat((List<?>)params.getValue().get("specialties")).hasSize(2);
+    }
+    @Test void fullRequestReachesRepositoryAndInvalidMultiSelectionsAreRejected() throws Exception {
+        search("{\"county\":\"新竹市\",\"districtCode\":\"1201\",\"income\":{\"min\":10},\"population\":{\"min\":1,\"max\":50000},\"area\":{\"max\":20},\"hospitals\":{\"max\":2},\"clinics\":{\"min\":1},\"personnel\":{\"category\":\"護理師\",\"scope\":\"clinic\",\"count\":{\"min\":1}},\"specialties\":[{\"category\":\"內科\",\"scope\":\"clinic\"}],\"sort\":[{\"field\":\"population\",\"direction\":\"asc\"}]}")
+          .andExpect(status().isOk()).andExpect(jsonPath("$.appliedFilters.county").value("新竹市"));
+        var params=org.mockito.ArgumentCaptor.forClass(Map.class);verify(repository).search(params.capture());
+        assertThat(params.getValue()).containsEntry("county","新竹市").containsEntry("districtCode","1201").containsEntry("incomeMin",10.0).containsEntry("populationMax",50000.0).containsEntry("areaMax",20.0).containsEntry("hospitalCountMax",2.0).containsEntry("clinicCountMin",1.0).containsEntry("personnelMin",1.0);
+        for(String body:List.of("{\"specialties\":[null]}","{\"specialties\":[{\"category\":\"內科\"},{\"category\":\"內科\"}]}","{\"specialtyMatch\":\"bad\"}","{\"specialties\":[{\"category\":\"不存在\"}]}"))search(body).andExpect(status().isBadRequest());
     }
 }

@@ -19,7 +19,7 @@ test('default, expanded and picker layout is aligned and non-overflowing on desk
       const basic = await page.locator('.basic-filter-fields').boundingBox();
       const county = await page.locator('#county').boundingBox(); const district = await page.locator('#districtCode').boundingBox();
       const sort = await page.locator('#sortField').boundingBox(); const direction = await page.locator('#sortDirection').boundingBox();
-      for(const box of [county,district,sort,direction]) assert.equal(box.height,44);
+      for(const box of [county,district,sort,direction]) assert.ok(box.height>=55);
       if(viewport.width>600) { assert.equal(county.y,district.y); assert.equal(sort.y,direction.y); assert.ok(county.width+district.width>basic.width*.9); }
       else { assert.ok(district.y>county.y); assert.ok(direction.y>sort.y); }
       assert.ok(sort.y>district.y+district.height);
@@ -68,19 +68,22 @@ test('icons remain bounded and native disclosure markers stay absent when page C
     await page.screenshot({path:path.join(directory,'css-failure-safe.png'),fullPage:true});
   } finally {await page.close();}
 });
-test('scope depends on a selection and editing is a neutral status, not an error', async()=>{
+test('scope remains editable and retains its value when personnel is cleared', async()=>{
   const page=await browser.newPage();
   try {
     await page.goto(base+'/pages/query/index.html'); await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='368');
     await page.locator('#advancedFilters > summary').click(); await page.locator('[data-condition-group="categories"] > summary').click();
-    assert.equal(await page.locator('#scope').isDisabled(),true);
+    assert.equal(await page.locator('#scope').isDisabled(),false);
     await page.locator('#personnelTrigger').click(); await page.locator('#personnelSearch').fill('護理師');
     await page.locator('#personnelPopup').getByRole('option',{name:'護理師',exact:true}).click();
     assert.equal(await page.locator('#scope').isEnabled(),true);
     assert.equal(await page.locator('#queryModeLabel').getAttribute('role'),'status');
     await page.selectOption('#scope','hospital');
     await page.getByRole('button',{name:'清除醫事人員',exact:true}).click();
-    assert.equal(await page.locator('#scope').isDisabled(),true);
+    assert.equal(await page.locator('#scope').isDisabled(),false);
+    assert.equal(await page.locator('#scope').inputValue(),'hospital');
+    assert.equal(await page.locator('#advancedCount').textContent(),'已設定 1 項條件');
+    await page.selectOption('#scope','all');
     assert.equal(await page.locator('#advancedCount').textContent(),'尚未設定條件');
     await page.click('#searchButton'); await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='368');
     assert.match(await page.locator('#queryModeLabel').textContent(),/醫院＋診所/);

@@ -28,6 +28,7 @@ export function initializeMap({ container, status, homeButton, count, createMark
   observer.observe(container);
   fitView();
   return {
+    map,
     update(rows, { fit = true } = {}) {
       currentRows = rows;
       layers.clearLayers();

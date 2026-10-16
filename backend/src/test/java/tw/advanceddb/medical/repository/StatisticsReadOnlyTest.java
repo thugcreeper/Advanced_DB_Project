@@ -21,12 +21,17 @@ class StatisticsReadOnlyTest {
             TransactionCallback<?> callback=invocation.getArgument(0); return callback.execute(transaction);
         });
         String hostile="' MATCH (n) DELETE n //";
-        new DistrictStatisticsRepository(connection).rows(hostile,"內科","clinic");
+        var selected=new java.util.LinkedHashMap<String,Object>();selected.put("category","內科");selected.put("position",0);selected.put("min",null);selected.put("max",null);
+        var input=DistrictStatisticsRepository.parameters();input.put("personnel",hostile);input.put("scope","clinic");input.put("specialties",java.util.List.of(selected));
+        new DistrictStatisticsRepository(connection).search(input);
         var config=ArgumentCaptor.forClass(SessionConfig.class); verify(driver).session(config.capture());
         assertThat(config.getValue().database()).contains("configured_database"); assertThat(config.getValue().defaultAccessMode()).isEqualTo(AccessMode.READ);
-        verify(transaction).run(eq(DistrictStatisticsRepository.QUERY),eq(Map.of("personnel",hostile,"specialty","內科","scope","clinic","doctors",java.util.List.of("西醫師","中醫師","牙醫師"))));
-        assertThat(DistrictStatisticsRepository.QUERY).doesNotContain(hostile).contains("$personnel","$specialty","$doctors","RECORD_PERSONNEL","RECORD_DEPARTMENT","RECORD_MEDICAL_FACILITIES","ir.統計年","pr.統計年");
-        assertThat(DistrictStatisticsRepository.QUERY).doesNotContain("CREATE ","MERGE ","DELETE ","SET ");
+        var query=ArgumentCaptor.forClass(String.class);var parameters=ArgumentCaptor.forClass(Map.class);
+        verify(transaction).run(query.capture(),parameters.capture());
+        assertThat(parameters.getValue()).containsEntry("personnel",hostile).containsEntry("scope","clinic");
+        assertThat(parameters.getValue().get("specialties").toString()).contains("內科");
+        assertThat(query.getValue()).doesNotContain(hostile).contains("$county","$districtCode","$personnel","$specialties","$specialtyMatch","$incomeMin","$hospitalCountMax","RECORD_PERSONNEL","RECORD_DEPARTMENT","r.類型","item.selected>0","any(item","all(item");
+        assertThat(query.getValue()).doesNotContain("CREATE ","MERGE ","DELETE ","SET ","HAS_DEPARTMENT");
         verify(session).close();
     }
     @Test void categoryOptionsUseTheSameConfiguredDatabase() {
@@ -38,5 +43,12 @@ class StatisticsReadOnlyTest {
         var config = ArgumentCaptor.forClass(SessionConfig.class); verify(driver).session(config.capture());
         assertThat(config.getValue().database()).contains("configured_database");
         assertThat(config.getValue().defaultAccessMode()).isEqualTo(AccessMode.READ);
+    }
+    @Test void sortingOnlyUsesServerWhitelistedIdentifiers() {
+        var parameters=DistrictStatisticsRepository.parameters();
+        parameters.put("sort",java.util.List.of(Map.of("field","population","direction","desc")));
+        assertThat(DistrictStatisticsRepository.orderedQuery(parameters)).contains("population DESC");
+        parameters.put("sort",java.util.List.of(Map.of("field","name DELETE n","direction","asc")));
+        assertThatThrownBy(()->DistrictStatisticsRepository.orderedQuery(parameters)).isInstanceOf(IllegalArgumentException.class);
     }
 }

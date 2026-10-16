@@ -5,8 +5,10 @@ import { hasLocation } from "./map.js";
 import { createClinicWeek } from "./clinic-week.js";
 
 function telephone(value) {
-  return value && /^[+\d\s()#-]+$/.test(value) && value.replace(/\D/g, "").length >= 5
-    ? `tel:${value.replace(/[\s()-]/g, "")}` : "";
+  if(typeof value!=='string'||!/^[+\d\s()#-]+$/.test(value))return '';
+  const [main,extension,...extra]=value.trim().split('#'),number=main.replace(/[\s()-]/g,'');
+  if(extra.length||!/^\+?\d{5,15}$/.test(number)||extension!==undefined&&!/^\d{1,8}$/.test(extension.trim()))return '';
+  return `tel:${number}${extension===undefined?'':';ext='+extension.trim()}`;
 }
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -20,20 +22,20 @@ function section(title) {
   return node;
 }
 
-export function createFacilityDetail({ onLocate, onClose }) {
+export function createFacilityDetail({ onClose }) {
   const get = id => document.getElementById(id);
   const panel = get("facilityDetail"), content = get("detailContent"), status = get("detailStatus");
   const title = get("detailTitle"), type = get("detailType"), retry = get("detailRetry"), actions = get("detailActions");
   let current, controller, version = 0, opener;
   get("detailClose").append(createIcon("x"));
-  get("detailLocate").prepend(createIcon("map-pin"));
+
 
   function render(data) {
     title.textContent = data.name || "未提供院所名稱";
     type.textContent = data.type || ""; type.hidden = !data.type;
     const contact = element("section", "detail-contact"), list = element("dl", "detail-facts");
     contact.setAttribute("aria-label", "院所聯絡資訊");
-    for (const [label, value] of [["地址", data.address], ["電話", data.phone]]) {
+    for (const [label, value] of [["地址", data.address], ["電話", telephone(data.phone)?data.phone:"暫無有效電話"]]) {
       const dd = element("dd", "", value || "暫無資料");
       if (label === "電話" && telephone(value)) {
         const link = element("a", "", value); link.href = telephone(value);
@@ -57,22 +59,23 @@ export function createFacilityDetail({ onLocate, onClose }) {
     const location = element("div", "detail-provenance");
     if (data.locationReviewRequired) location.append(element("p", "detail-warning", "座標待複核，暫不顯示地圖標記。"));
     else if (!hasLocation(data)) location.append(element("p", "detail-muted", "暫無有效座標"));
-    if (data.source?.trim()) location.append(element("p", "detail-source", `資料來源：${data.source}`));
+    if(hasLocation(data)) location.append(element("p","detail-coordinates",`座標：${data.latitude}，${data.longitude}`));
     content.append(location);
     const call = get("detailCall"), tel = telephone(data.phone);
-    call.setAttribute("aria-disabled", String(!tel)); call.tabIndex = tel ? 0 : -1;
+    call.hidden = !tel; call.setAttribute("aria-disabled", String(!tel)); call.tabIndex = tel ? 0 : -1;
     call.title = tel ? "撥打電話" : "未提供有效電話";
     if (tel) call.href = tel; else call.removeAttribute("href");
-    get("detailLocate").disabled = !hasLocation(data);
-    get("detailLocate").title = hasLocation(data) ? "在地圖上定位" : "院所缺少有效座標或座標待複核";
-    const hints = [!tel && "未提供有效電話", !hasLocation(data) && (data.locationReviewRequired ? "座標待複核，無法定位" : "暫無有效座標")].filter(Boolean);
-    get("detailActionHint").textContent = hints.join("；"); get("detailActionHint").hidden = !hints.length;
+    const hints = [!tel&&"未提供有效電話"].filter(Boolean);
     const google = get("detailGoogle");
-    const query = hasLocation(data) ? `${data.latitude},${data.longitude}` : data.address ? `${data.name} ${data.address}` : "";
+    const address=typeof data.address==='string'?data.address.trim():'';
+    const name=typeof data.name==='string'?data.name.trim():'';
+    const query=hasLocation(data)?`${data.latitude},${data.longitude}`:address?[name,address].filter(Boolean).join(' '):'';
     google.hidden = !query;
     if (query) google.href = `https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query })}`;
     else google.removeAttribute("href");
-    actions.hidden = false;
+    if(!query)hints.push('未提供有效座標或完整地址，無法開啟 Google 地圖');
+    get('detailActionHint').textContent=hints.join('；');get('detailActionHint').hidden=!hints.length;
+    actions.hidden = !tel&&!query;
   }
   async function load() {
     controller?.abort(); controller = new AbortController();
@@ -95,7 +98,7 @@ export function createFacilityDetail({ onLocate, onClose }) {
   function close({ restoreFocus = true } = {}) {
     const wasOpen = !panel.hidden;
     ++version; controller?.abort(); panel.hidden = true; panel.setAttribute("aria-busy", "false");
-    content.replaceChildren(); current = null;
+    content.replaceChildren(); current = null; delete panel.dataset.sourceId;
     if (wasOpen) {
       onClose();
       if (restoreFocus) (opener?.isConnected ? opener : get("searchButton"))?.focus({ preventScroll: true });
@@ -103,13 +106,27 @@ export function createFacilityDetail({ onLocate, onClose }) {
   }
   get("detailClose").addEventListener("click", () => close());
   retry.addEventListener("click", load);
-  get("detailLocate").addEventListener("click", () => current && onLocate(current.sourceId));
+
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && !panel.hidden && !get("aboutDialog").open) { event.preventDefault(); close(); }
   });
+  function layout() {
+    if(panel.hidden)return;
+    if(matchMedia('(max-width:1100px)').matches){
+      for(const key of ['top','right','width','height'])panel.style.removeProperty(key);
+      const box=panel.parentElement.getBoundingClientRect(),sheet=panel.getBoundingClientRect();
+      const overlap=sheet.right>box.left&&sheet.left<box.right?Math.max(0,Math.min(box.height-38,box.bottom-sheet.top)):0;
+      panel.parentElement.style.setProperty('--detail-bottom-overlap',`${overlap}px`);return;
+    }
+    const rect=panel.parentElement.getBoundingClientRect(),viewport=window.visualViewport?.height||innerHeight;
+    const top=Math.min(Math.max(12,rect.top),Math.max(12,viewport-240));
+    const height=Math.min(rect.height,viewport-top-12,Math.max(240,rect.bottom-top));
+    panel.style.top=`${top}px`;panel.style.right=`${Math.max(12,innerWidth-rect.right)}px`;panel.style.width=`${Math.min(390,rect.width,innerWidth-24)}px`;panel.style.height=`${Math.max(0,height)}px`;panel.parentElement.style.setProperty('--detail-width',panel.style.width);
+  }
+  window.addEventListener('resize',layout);window.addEventListener('scroll',layout,{passive:true});
   return {
     open(row, trigger) {
-      opener = trigger || document.activeElement; current = row; panel.hidden = false;
+      opener = trigger || document.activeElement; current = row; panel.hidden = false; panel.dataset.sourceId=row.sourceId; layout();
       title.textContent = row.name || "院所詳情"; type.textContent = row.type || ""; type.hidden = !row.type;
       get("detailScroll").scrollTop = 0; title.focus({ preventScroll: true }); load();
     }, close,

@@ -11,7 +11,7 @@ function node(tag, className, text) {
 
 export function createClinicWeek(schedule) {
   const section = node("section", "detail-section clinic-week");
-  section.append(node("h3", "", "診療時間"));
+  section.append(node("h3", "", "診療時間（資料記載）"));
   if (!["available", "partial"].includes(schedule?.status) || !schedule.days?.some(day => ["scheduled", "closed"].includes(day.status))) {
     section.append(node("p", "detail-muted", schedule?.status === "invalid" ? "診療時間資料格式異常，請向院所確認。" : "暫無診療時間資料"));
     return section;

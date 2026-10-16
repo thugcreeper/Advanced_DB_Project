@@ -21,6 +21,7 @@ test('marker and result open the same nonmodal detail, focus returns and map sta
   try{
     const row=page.locator('#facilityResults li').first();const id=await row.getAttribute('data-source-id');
     await page.locator(`path[data-source-id="${id}"]`).click({force:true});
+    const picker=page.locator('.marker-choice-list');if(await picker.isVisible())await picker.locator(`[data-facility-id="${id}"]`).click();
     await page.locator('#detailContent').waitFor({state:'visible'});
     const name=await page.locator('#detailTitle').textContent();
     await page.click('#detailClose');await page.locator('#facilityDetail').waitFor({state:'hidden'});
@@ -31,11 +32,11 @@ test('marker and result open the same nonmodal detail, focus returns and map sta
     assert.equal(await page.locator('#detailTitle').textContent(),name);
     assert.equal(await row.locator('.facility-open').getAttribute('aria-pressed'),'true');
     await page.click('#resetMap');assert.equal(await page.locator('#facilityDetail').isVisible(),true);
-    await page.click('#detailLocate');
-    const markerBounds=await page.locator(`path[data-source-id="${id}"]`).boundingBox();
-    const drawerBounds=await page.locator('#facilityDetail').boundingBox();
-    assert.ok(markerBounds.x+markerBounds.width<drawerBounds.x);
+    await row.locator('.locate-button').click();assert.equal(await page.locator('#facilityDetail').isVisible(),false);
+    const markerBounds=await page.locator(`path[data-source-id="${id}"]`).boundingBox(),mapBounds=await page.locator('#map').boundingBox();
+    assert.ok(markerBounds.x>=mapBounds.x&&markerBounds.x+markerBounds.width<=mapBounds.x+mapBounds.width);
     assert.equal(await page.locator('#map .leaflet-popup').count(),0);
+    await row.locator('.facility-open').click();await page.locator('#detailContent').waitFor({state:'visible'});
     await page.keyboard.press('Escape');assert.equal(await row.locator('.facility-open').evaluate(el=>el===document.activeElement),true);
     assert.equal(await page.locator('#facilityResults li').count(),14);assert.deepEqual(errors,[]);
   }finally{await page.close();}
@@ -76,7 +77,7 @@ test('missing fields, malformed hours, loading, errors and late responses never 
     await page.waitForTimeout(650);assert.equal(await page.locator('#detailTitle').textContent(),'目前院所');
     assert.match(await page.locator('#detailContent').textContent(),/尚無科別資料/);
     assert.match(await page.locator('#detailContent').textContent(),/暫無診療時間資料/);
-    assert.equal(await page.locator('#detailLocate').isDisabled(),true);assert.equal(await page.locator('#detailGoogle').isVisible(),false);
+    assert.equal(await page.locator('#detailLocate').count(),0);assert.equal(await page.locator('#detailGoogle').isVisible(),false);
     mode='error';await buttons.nth(1).click();await page.locator('#detailRetry').waitFor({state:'visible'});
     assert.match(await page.locator('#detailStatus').textContent(),/測試連線失敗/);
     mode='missing';await page.click('#detailRetry');await page.waitForFunction(()=>document.getElementById('detailStatus').textContent.includes('查無此院所'));

@@ -1,23 +1,29 @@
 import { groupApiValues } from "./medical-categories.js";
 
-export function initializeHierarchicalSelector({ root, input, label, groups }) {
+export function initializeHierarchicalSelector({ root, input, label, groups, multiple = false }) {
   const trigger = root.querySelector(".selector-trigger"), valueLabel = root.querySelector(".selector-value");
   const clearButton = root.querySelector(".selector-clear"), popup = root.querySelector(".selector-popup");
   const search = popup.querySelector("input[type=search]"), list = popup.querySelector(".selector-groups");
   const message = popup.querySelector(".selector-empty"), notice = root.querySelector(".selector-notice");
   let entries = [], opened = false, savedExpansion = null;
   const visibleOptions = () => [...popup.querySelectorAll(".selector-option")].filter(button => !button.hidden && (!button.closest("details") || button.closest("details").open));
+  const values=()=>multiple?JSON.parse(input.value||'[]'):(input.value?[input.value]:[]);
+  const chips=multiple?document.createElement('div'):null;
+  if(chips){chips.className='selector-chips';root.querySelector('.selector-control').after(chips);}
   function sync() {
-    valueLabel.textContent = input.value || "不限"; clearButton.disabled = !input.value;
+    const chosen=values();valueLabel.textContent = multiple?(chosen.length?`已選 ${chosen.length} 科`:'不限'):input.value||'不限'; clearButton.disabled = !chosen.length;
+    if(chips)chips.replaceChildren(...chosen.map(name=>{const chip=document.createElement('button');chip.type='button';chip.className='selector-chip';chip.textContent=name+' ×';chip.setAttribute('aria-label','移除'+name);chip.addEventListener('click',()=>{choose(name);if(!opened)trigger.focus();});return chip;}));
     popup.querySelectorAll(".selector-option").forEach(button => {
-      const selected = button.dataset.value === input.value;
+      const selected = chosen.includes(button.dataset.value);
       button.setAttribute(button.getAttribute("role") === "option" ? "aria-selected" : "aria-pressed", String(selected)); button.classList.toggle("is-selected", selected);
     });
   }
   function choose(value) {
-    const changed = input.value !== value;
-    input.value = value; sync(); close();
-    if (changed) { input.dispatchEvent(new Event("input", { bubbles: true })); input.dispatchEvent(new Event("change", { bubbles: true })); }
+    const previous=input.value;
+    if(multiple){const chosen=values();const next=value===''?[]:chosen.includes(value)?chosen.filter(v=>v!==value):[...chosen,value];input.value=next.length?JSON.stringify(next):'';}
+    else input.value=value;
+    sync();if(!multiple||value==='')close();
+    if(previous!==input.value){input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
   }
   function position() {
     if (!opened) return;
@@ -74,6 +80,7 @@ export function initializeHierarchicalSelector({ root, input, label, groups }) {
   document.addEventListener("focusin", event => { if (opened && !root.contains(event.target)) close(false); });
   window.addEventListener("resize", position); window.addEventListener("scroll", position, true);
   return {
+    values,
     setOptions(values) {
       const data = groupApiValues(values, groups); list.replaceChildren(); entries = []; savedExpansion = null;
       data.groups.forEach((group, index) => {
@@ -84,10 +91,10 @@ export function initializeHierarchicalSelector({ root, input, label, groups }) {
         const state = document.createElement("span"); state.className = "group-state"; state.setAttribute("aria-hidden", "true");
         const expand = document.createElement("span"), collapse = document.createElement("span");
         expand.className = "when-closed"; expand.textContent = "展開"; collapse.className = "when-open"; collapse.textContent = "收合";
-        state.append(expand, collapse); summary.append(title, count, state); items.setAttribute("role", "listbox"); items.setAttribute("aria-label", `${label}・${group.label}`);
+        state.append(expand, collapse); summary.append(title, count, state); items.setAttribute("role", "listbox"); items.setAttribute("aria-label", `${label}・${group.label}`);if(multiple)items.setAttribute("aria-multiselectable","true");
         const buttons = group.values.map(value => {
           const button = document.createElement("button"); button.type = "button"; button.className = "selector-option"; button.dataset.value = value;
-          button.textContent = value; button.setAttribute("role", "option"); button.addEventListener("click", () => choose(value)); items.append(button); return button;
+          button.textContent = value; button.setAttribute("aria-label", value); button.setAttribute("role", "option"); button.addEventListener("click", () => choose(value)); items.append(button); return button;
         });
         details.append(summary, items); list.append(details); entries.push({ details, buttons });
       });

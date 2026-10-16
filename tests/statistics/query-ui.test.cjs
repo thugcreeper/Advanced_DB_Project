@@ -21,7 +21,7 @@ async function categories(page) {
 async function choose(page, id, name) {
   await page.locator('#' + id + 'Trigger').click();
   await page.locator('#' + id + 'Search').fill(name);
-  await page.locator('#' + id + 'Popup').getByRole('option', { name, exact: true }).click();
+  await page.locator('#' + id + 'Popup').getByRole('option', { name, exact: true }).click();if(id==='specialty')await page.getByRole('button',{name:'關閉醫療科別選單',exact:true}).click();
 }
 test('initial page only shows basic criteria; advanced fields are collapsed', async () => {
   const page = await ready();
@@ -68,8 +68,8 @@ test('cross-category search restores expansion, preserves query results and subm
     await page.locator('#specialtySearch').fill('');
     assert.equal(await dental.evaluate(element => element.open), false);
     await page.locator('#specialtySearch').fill('贋復'); await page.locator('#specialtySearch').press('Enter');
-    assert.equal(await page.locator('#specialty').inputValue(), '贋復補綴牙科');
-    assert.equal(await page.locator('#specialtyValue').textContent(), '贋復補綴牙科');
+    assert.deepEqual(JSON.parse(await page.locator('#specialty').inputValue()), ['贋復補綴牙科']);await page.getByRole('button',{name:'關閉醫療科別選單',exact:true}).click();
+    assert.equal(await page.locator('#specialtyValue').textContent(), '已選 1 科');
     assert.equal(await page.locator('#specialtyPopup').isVisible(), false);
     assert.equal(await page.locator('#specialtyMin').isEnabled(), true);
   } finally { await page.close(); }
@@ -86,13 +86,13 @@ test('collapsing advanced criteria retains every field and exactly preserves req
     await page.fill('#areaMin', '15.7267'); await page.fill('#areaMax', '54.8491');
     await page.locator('[data-condition-group="facilities"] > summary').click();
     await page.fill('#maxHospitals', '0'); await page.fill('#minClinics', '0');
-    await choose(page, 'specialty', '內科'); await page.fill('#specialtyMin', '0');
-    await choose(page, 'personnel', '護理師'); await page.fill('#personnelMin', '0');
+    await choose(page, 'specialty', '內科'); await page.fill('#specialtyMin', '1');
+    await choose(page, 'personnel', '護理師'); await page.fill('#personnelMin', '1');
     await page.selectOption('#scope', 'hospital'); await page.selectOption('#sortField', 'population'); await page.selectOption('#sortDirection', 'asc');
     await page.locator('#advancedFilters > summary').click();
     assert.match(await page.locator('#advancedCount').textContent(), /已設定 12 項/);
-    await page.click('#searchButton'); await page.waitForFunction(() => document.getElementById('resultCount').textContent === '1');
-    assert.deepEqual(bodies.at(-1), { county:'新竹市',districtCode:'1205',income:{min:1},population:{min:79606,max:222219},area:{min:15.7267,max:54.8491},hospitals:{max:0},clinics:{min:0},personnel:{category:'護理師',scope:'hospital',count:{min:0}},specialty:{category:'內科',scope:'hospital',count:{min:0}},sort:[{field:'population',direction:'asc'}] });
+    const responsePromise=page.waitForResponse(r=>r.url().endsWith('/statistics/search')&&r.request().method()==='POST');await page.click('#searchButton');const result=await (await responsePromise).json();await page.waitForFunction(total=>document.getElementById('resultCount').textContent===String(total),result.total);assert.ok(result.districts.every(row=>row.personnel>0&&row.specialty>0));
+    assert.deepEqual(bodies.at(-1), { county:'新竹市',districtCode:'1205',income:{min:1},population:{min:79606,max:222219},area:{min:15.7267,max:54.8491},hospitals:{max:0},clinics:{min:0},personnel:{category:'護理師',scope:'hospital',count:{min:1}},specialties:[{category:'內科',scope:'hospital',count:{min:1}}],specialtyMatch:'or',sort:[{field:'population',direction:'asc'}] });
     await page.locator('#advancedFilters > summary').click(); assert.equal(await page.locator('#personnel').inputValue(), '護理師');
   } finally { await page.close(); }
 });
@@ -111,7 +111,7 @@ test('keyboard, escape, unlimited, clear and form reset work for both pickers', 
     await choose(page, 'personnel', '牙醫師'); await choose(page, 'specialty', '植牙科');
     await page.locator('#specialtyTrigger').click(); await page.getByRole('button', { name:'醫療科別不限', exact:true }).click();
     assert.equal(await page.locator('#specialty').inputValue(), '');
-    await choose(page, 'specialty', '中醫內科'); await page.fill('#specialtyMin','0');
+    await choose(page, 'specialty', '中醫內科'); await page.fill('#specialtyMin','1');
     await page.locator('#builderPane button[type=reset]').click();
     await page.waitForFunction(() => document.getElementById('resultCount').textContent === '368');
     assert.equal(await page.locator('#personnelValue').textContent(), '不限'); assert.equal(await page.locator('#specialtyValue').textContent(), '不限');
@@ -127,7 +127,7 @@ test('unknown API options are retained under fallback group and duplicates repor
     });
     await page.goto(base + '/pages/query/index.html'); await page.waitForFunction(() => document.getElementById('resultCount').textContent === '368');
     await categories(page); await choose(page, 'specialty', '測試新增科別');
-    assert.equal(await page.locator('#specialty').inputValue(), '測試新增科別');
+    assert.deepEqual(JSON.parse(await page.locator('#specialty').inputValue()), ['測試新增科別']);
     assert.match(await page.locator('#specialtyPicker .selector-notice').textContent(), /測試新增科別/);
     const values = await page.locator('#specialtyPopup .selector-category').last().locator('[role=option]').evaluateAll(options => options.map(option => option.dataset.value));
     assert.ok(values.includes('測試新增科別')); assert.equal(await page.locator('#specialtyPopup [data-value="內科"]').count(), 1);
@@ -144,7 +144,7 @@ test('invalid criteria in collapsed groups are revealed instead of silently bloc
     assert.equal(await page.locator('#advancedFilters').evaluate(element=>element.open),true);
     assert.equal(await page.locator('#maxHospitals').isVisible(),true);
     assert.equal(await page.locator('#maxHospitals').evaluate(element=>element.validity.valid),false);
-    await page.getByText('請確認數值範圍。',{exact:true}).waitFor();
+    await page.locator('#queryModeLabel').filter({hasText:'請確認數值範圍。'}).waitFor();
   } finally { await page.close(); }
 });
 test('desktop/mobile popup remains within viewport with scrolling and no page errors', async () => {
