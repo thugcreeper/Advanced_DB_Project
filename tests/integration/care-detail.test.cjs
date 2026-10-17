@@ -70,13 +70,23 @@ test('one centered modal supports list/marker, all close methods, focus trap and
 
 test('CARE table shows 1/2/3/5 intervals without splitting continuous sessions, with closure/missing/overnight',async()=>{
  const {page}=await ready();try{
-  await open(page);assert.equal(await page.locator('.clinic-table thead [data-weekday]').count(),7);assert.equal(await page.locator('.clinic-table tbody tr').count(),5);
+  await open(page);assert.equal(await page.locator('.clinic-table thead [data-weekday]').count(),7);assert.equal(await page.locator('.clinic-table tbody tr').count(),3);
   assert.equal(await page.locator('.clinic-session-dot').count(),11);assert.equal(await page.locator('.clinic-day,.clinic-week-tabs').count(),0);
   assert.deepEqual(await page.locator('td[data-weekday=monday] .clinic-interval').allTextContents(),['08:00–17:30']);
   assert.equal(await page.locator('td[data-weekday=tuesday] .clinic-interval').count(),2);assert.equal(await page.locator('td[data-weekday=wednesday] .clinic-interval').count(),3);assert.equal(await page.locator('td[data-weekday=thursday] .clinic-interval').count(),5);
   assert.match(await page.locator('td[data-weekday=thursday]').last().textContent(),/18:00–00:30.*跨日至次日/);
   assert.match(await page.locator('td[data-weekday=friday]').textContent(),/未提供資料/);assert.match(await page.locator('td[data-weekday=sunday]').textContent(),/休診/);
-  assert.doesNotMatch(await page.textContent('.clinic-table'),/早診|午診|晚診/);
+  assert.deepEqual(await page.locator('.clinic-session-name').allTextContents(),['早診','午診','晚診']);
+  assert.doesNotMatch(await page.textContent('.clinic-table'),/第 \d+ 時段/);
+  assert.equal(await page.locator('tr[data-session=morning] .clinic-common-time').textContent(),'08:0017:30');
+  const exceptions=page.locator('.clinic-interval.is-exception');assert.equal(await exceptions.count(),8);
+  assert.equal(await exceptions.evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).color==='rgb(180, 35, 24)'&&!n.classList.contains('sr-only'))),true);
+  assert.equal(await page.locator('.clinic-interval.sr-only').count(),3);
+  assert.equal(await page.locator('.clinic-table-legend,.clinic-week-table .detail-footnote,.detail-coordinates').count(),0);
+  assert.doesNotMatch(await page.textContent('#detailContent'),/● 有診療時段|時段依原始資料列出|座標：|另開分頁/);
+  assert.equal(await page.locator('.detail-map-link').textContent(),'Google 地圖');
+  assert.equal(await page.locator('.detail-map-link').evaluate(n=>getComputedStyle(n).textDecorationLine),'none');
+  assert.ok((await page.locator('.detail-map-link').boundingBox()).height>=44);
  }finally{await page.close();}
 });
 
@@ -93,6 +103,22 @@ for(const [width,height] of [[1440,1000],[820,1180],[600,900],[390,844],[320,700
   assert.equal(await page.locator('#facilityDetail').evaluate(n=>n.scrollWidth>n.clientWidth),false);
   if(width<800)assert.equal(await page.locator('.clinic-table-scroll').evaluate(n=>n.scrollWidth>n.clientWidth),true);
   assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+
+test('session common hours come from this clinic and different dates show full red exceptions',async()=>{
+ const {page,state}=await ready();try{
+  state.detail.clinicHours={status:'available',days:[
+   {day:'monday',status:'scheduled',slots:[slot('08:30','12:00'),slot('14:00','17:30'),slot('18:30','21:00')]},
+   {day:'tuesday',status:'scheduled',slots:[slot('08:30','12:00'),slot('14:00','17:30'),slot('18:30','21:00')]},
+   {day:'wednesday',status:'scheduled',slots:[slot('09:00','11:30'),slot('13:00','16:00'),slot('19:00','22:00')]},
+  ]};await open(page);
+  assert.deepEqual(await page.locator('.clinic-common-time').allTextContents(),['08:3012:00','14:0017:30','18:3021:00']);
+  assert.equal(await page.locator('.clinic-session-dot').count(),9);
+  assert.equal(await page.locator('td[data-weekday=monday] .is-exception').count(),0);
+  assert.equal(await page.locator('td[data-weekday=tuesday] .is-exception').count(),0);
+  assert.deepEqual(await page.locator('td[data-weekday=wednesday] .is-exception').allTextContents(),['09:00–11:30','13:00–16:00','19:00–22:00']);
+  await page.screenshot({path:path.join(artifacts,'care-session-hours.png')});
  }finally{await page.close();}
 });
 

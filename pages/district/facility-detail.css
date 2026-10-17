@@ -51,7 +51,6 @@
 .detail-google { border: 1px solid #a8c2df; color: #195a97; background: #edf5ff; font-weight: 600; }
 .detail-google:hover { background: #dceafb; }
 .detail-action-hint { flex: 0 0 100%; color: var(--care-muted); font-size: 12px; line-height: 1.6; text-align: center; }
-.detail-coordinates { color: var(--care-muted); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
 .facility-open { background: none; border: 0; padding: 0; text-align: left; color: #203954; font-weight: 700; line-height: 1.6; overflow-wrap: anywhere; }
 .facility-open:hover { color: #075bc8; text-decoration: underline; text-underline-offset: 4px; }
 .facility-list li { cursor: pointer; padding-inline: 10px; border-radius: 4px; }
@@ -107,7 +106,9 @@ html.facility-modal-open { overflow: hidden; }
 .facility-modal .detail-facts dt { display: flex; align-items: center; gap: 8px; padding: 0; font-size: 13px; }
 .facility-modal .detail-facts dd { font-size: 15px; }
 .detail-contact-symbol { font-size: 19px; line-height: 1; width: 18px; text-align: center; }
-.detail-map-link { display: inline-block; margin-top: 16px; color: #195a97; font-size: 14px; text-underline-offset: 4px; }
+.detail-map-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin-top: 16px; padding: 10px 16px; border: 1px solid #a8c2df; border-radius: 6px; background: #edf5ff; color: #195a97; font-size: 14px; font-weight: 600; text-decoration: none; }
+.detail-map-link:hover { background: #dceafb; }
+.detail-map-link:focus-visible { outline: 2px solid #2476d2; outline-offset: 3px; }
 .facility-modal .detail-section { padding: 22px 0; border-top: 1px solid var(--care-line); }
 .facility-modal .detail-section h3 { font-size: 19px; margin-bottom: 16px; }
 .facility-modal .detail-actions { padding: 14px 28px; gap: 12px; }
@@ -122,18 +123,18 @@ html.facility-modal-open { overflow: hidden; }
 .clinic-table caption { text-align: left; }
 .clinic-table th, .clinic-table td { padding: 13px 5px; border-bottom: 1px solid #fff; border-right: 1px solid #fff; vertical-align: middle; background: #fff; }
 .clinic-table thead th { font-size: 16px; font-weight: 700; }
+.clinic-table tbody td { vertical-align: top; padding-top: 27px; }
 .clinic-table th:first-child { width: 90px; }
 .clinic-table [data-weekday="monday"], .clinic-table [data-weekday="wednesday"], .clinic-table [data-weekday="friday"], .clinic-table [data-weekday="sunday"] { background: #eaf5ec; }
 .clinic-table .is-today { background: #ffe392 !important; color: #665016; }
-.clinic-table th[data-today]::after { content: '今天'; display: block; font-size: 10px; font-weight: 500; margin-top: 3px; }
+
 .clinic-table .clinic-slot-label { font-size: 13px; font-weight: 600; }
-.clinic-session-dot { display: block; width: 11px; height: 11px; margin: 0 auto 8px; background: #1c6b2c; border-radius: 50%; }
+.clinic-session-dot { display: block; width: 18px; height: 18px; margin: 0 auto 8px; background: #1c6b2c; border-radius: 50%; }
 .clinic-interval { display: block; white-space: nowrap; font-size: 13px; font-variant-numeric: tabular-nums; color: #25422f; }
 .clinic-table .clinic-overnight { display: block; margin-top: 4px; }
 .clinic-cell-state { color: #65786a; font-size: 12px; }
 .clinic-cell-state.is-closed { font-size: 20px; }
 .clinic-closed-label { display: block; font-size: 12px; margin-top: 5px; }
-.clinic-table-legend { color: #536f5c; font-size: 12px; line-height: 1.8; margin-top: 12px; }
 @media (max-width: 700px) {
   .facility-modal { width: calc(100vw - 24px); max-width: calc(100vw - 24px); border-radius: 12px; }
   .facility-modal .detail-header { padding: 12px 18px 16px; }
@@ -151,3 +152,11 @@ html.facility-modal-open { overflow: hidden; }
   .facility-modal .detail-departments li:nth-child(even) { background: #eaf5ed; }
   .facility-modal #detailTitle { font-size: 21px; }
 }
+
+.clinic-session-name { display: block; font-size: 15px; margin-bottom: 6px; }
+.clinic-common-time { display: block; font-size: 13px; font-weight: 500; line-height: 1.7; font-variant-numeric: tabular-nums; color: #35463d; }
+.clinic-common-time > span { display: block; }
+.clinic-session { position: relative; }
+.clinic-session + .clinic-session { margin-top: 14px; }
+.clinic-session .clinic-session-dot { margin-bottom: 0; }
+.clinic-table .clinic-interval.is-exception { color: #b42318; margin-top: 7px; font-weight: 600; }

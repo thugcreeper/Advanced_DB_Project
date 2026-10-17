@@ -66,7 +66,6 @@ export function createFacilityDetail({ onClose }) {
     const location = element("div", "detail-provenance");
     if (data.locationReviewRequired) location.append(element("p", "detail-warning", "座標待複核，暫不顯示地圖標記。"));
     else if (!hasLocation(data)) location.append(element("p", "detail-muted", "暫無有效座標"));
-    if(hasLocation(data)) location.append(element("p","detail-coordinates",`座標：${data.latitude}，${data.longitude}`));
     content.append(location);
     const call = get("detailCall"), tel = telephone(data.phone);
     call.hidden = !tel; call.setAttribute("aria-disabled", String(!tel)); call.tabIndex = tel ? 0 : -1;
@@ -81,7 +80,8 @@ export function createFacilityDetail({ onClose }) {
     if (query) google.href = `https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query })}`;
     else google.removeAttribute("href");
     if (modal && query) {
-      const link = element("a", "detail-map-link", "Google 地圖（另開分頁）");
+      const link = element("a", "detail-map-link");
+      link.append(createIcon("map-pin"), element("span", "", "Google 地圖"));
       link.href = google.href; link.target = "_blank"; link.rel = "noopener noreferrer"; contact.append(link);
     }
     if(!query)hints.push('未提供有效座標或完整地址，無法開啟 Google 地圖');

@@ -22,8 +22,22 @@ function nextMidnight(date) {
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(date).map(part => [part.type, part.value]));
   return Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day) + 1) - 8 * 3600000 - date.getTime() + 20;
 }
+// Group whole intervals by opening time; never split a continuous interval.
+const sessions = [{ key: 'morning', label: '早診' }, { key: 'afternoon', label: '午診' }, { key: 'evening', label: '晚診' }];
+const sessionKey = slot => Number(slot.open.slice(0, 2)) < 12 ? 'morning' : Number(slot.open.slice(0, 2)) < 18 ? 'afternoon' : 'evening';
+export function buildClinicSessions(days) {
+  return sessions.map(session => {
+    const byDay = days.map(day => day.slots.filter(slot => sessionKey(slot) === session.key));
+    const counts = new Map(); let common = null, most = 0;
+    byDay.flat().forEach(slot => {
+      const key = `${slot.open}–${slot.close}`, count = (counts.get(key) || 0) + 1;
+      counts.set(key, count); if (count > most) { most = count; common = slot; }
+    });
+    return { ...session, byDay, common };
+  });
+}
 export function createClinicTable(schedule) {
-  const days = normalizeClinicWeek(schedule), rows = Math.max(1, ...days.map(day => day.slots.length));
+  const days = normalizeClinicWeek(schedule), rows = buildClinicSessions(days);
   const section = node('section', 'detail-section clinic-week clinic-week-table');
   section.append(node('h3', '', '診療時間'));
   const wrap = node('div', 'clinic-table-scroll'); wrap.tabIndex = 0; wrap.setAttribute('role', 'region'); wrap.setAttribute('aria-label', '每週門診時間表，可左右捲動');
@@ -31,28 +45,37 @@ export function createClinicTable(schedule) {
   const head = node('thead'), heading = node('tr'), corner = node('th', '', '門診表'); corner.scope = 'col'; heading.append(corner);
   days.forEach(day => { const th = node('th', '', `週${day.label}`); th.scope = 'col'; th.dataset.weekday = day.key; heading.append(th); });
   head.append(heading); const body = node('tbody');
-  for (let index = 0; index < rows; index++) {
-    const row = node('tr'), label = node('th', 'clinic-slot-label', `第 ${index + 1} 時段`); label.scope = 'row'; row.append(label);
-    days.forEach(day => {
+  rows.forEach((session, index) => {
+    const row = node('tr'), label = node('th', 'clinic-slot-label'); label.scope = 'row'; row.dataset.session = session.key;
+    label.append(node('span', 'clinic-session-name', session.label));
+    if (session.common) {
+      const time = node('span', 'clinic-common-time');
+      time.append(node('span', '', session.common.open), node('span', '', session.common.close)); label.append(time);
+    } else label.append(node('span', 'clinic-common-time', '—'));
+    row.append(label);
+    days.forEach((day, dayIndex) => {
       if (day.status !== 'scheduled' && index > 0) return;
       const cell = node('td'); cell.dataset.weekday = day.key;
       if (day.status !== 'scheduled') {
-        cell.rowSpan = rows;
+        cell.rowSpan = rows.length;
         cell.append(node('span', `clinic-cell-state is-${day.status}`, day.status === 'closed' ? '—' : day.status === 'invalid' ? '格式異常' : '未提供資料'));
         if (day.status === 'closed') cell.append(node('span', 'clinic-closed-label', '休診'));
-      } else if (day.slots[index]) {
-        const slot = day.slots[index], dot = node('span', 'clinic-session-dot'); dot.setAttribute('aria-hidden', 'true');
-        cell.append(dot, node('span', 'clinic-interval', `${slot.open}–${slot.close}`));
-        if (slot.close < slot.open && slot.close !== '24:00') cell.append(node('span', 'clinic-overnight', '跨日至次日'));
-      } else { cell.textContent = '—'; cell.setAttribute('aria-label', `星期${day.label}沒有第 ${index + 1} 時段紀錄`); }
+      } else if (session.byDay[dayIndex].length) {
+        session.byDay[dayIndex].forEach(slot => {
+          const item = node('div', 'clinic-session'), dot = node('span', 'clinic-session-dot'); dot.setAttribute('aria-hidden', 'true');
+          const different = slot.open !== session.common.open || slot.close !== session.common.close;
+          item.append(dot, node('span', `clinic-interval ${different ? 'is-exception' : 'sr-only'}`, `${slot.open}–${slot.close}`));
+          if (slot.close < slot.open && slot.close !== '24:00') item.append(node('span', 'clinic-overnight', '跨日至次日'));
+          cell.append(item);
+        });
+      } else { cell.textContent = '—'; cell.setAttribute('aria-label', `星期${day.label}無${session.label}紀錄`); }
       row.append(cell);
     });
     body.append(row);
-  }
+  });
   table.append(caption, head, body); wrap.append(table); section.append(wrap);
   if (schedule?.status === 'invalid') section.append(node('p', 'detail-warning', '診療時間資料格式異常，請向院所確認。'));
   else if (schedule?.status === 'partial' || days.some(day => day.invalid)) section.append(node('p', 'detail-warning', '部分診療時間資料格式異常，已保留可辨識的時段。'));
-  section.append(node('p', 'clinic-table-legend', '● 有診療時段　— 無該時段紀錄；明確休診另有標示。淡黃色為臺灣時間的今天。'), node('p', 'detail-footnote', '時段依原始資料列出，不代表早、午、晚診分類；實際診療時間請先致電院所確認。'));
   let timer;
   function refresh() {
     const today = taipeiWeekday();
