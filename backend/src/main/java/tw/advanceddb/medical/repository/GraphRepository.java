@@ -11,7 +11,7 @@ public final class GraphRepository {
     public GraphRepository(Neo4jConnection connection) { this.connection = connection; }
     public record Page(long total, List<FacilityNode> facilities) {}
     static final String MATCH = """
-        MATCH (a:鄉鎮區碼與名稱)-[:HAS_FACILITY]->(f:醫療院所)
+        MATCH (a:鄉鎮區碼與名稱)-[:HAS_MEDICAL_FACILITIES]->(f:醫療院所)
         WHERE toString(a.鄉鎮市區碼) = $districtCode AND f.type IN $types
           AND ($department = '' OR EXISTS {
             MATCH (f)-[:HAS_DEPARTMENT]->(selected:科別) WHERE selected.科別名稱 = $department

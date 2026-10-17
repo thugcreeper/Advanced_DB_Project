@@ -84,7 +84,7 @@ function highlight(){
   $('nodeSearch').setAttribute('aria-label','尋找已載入節點');$('nodeSearchStatus').textContent=term?(matches?`已載入節點中有 ${matches} 個符合`:'已載入節點沒有符合名稱；可清除搜尋或載入更多院所。'):'';$('clearSelection').disabled=!selected&&!term;
 }
 function render(){
-  svg.replaceChildren(shape('title',{},'行政區透過 HAS_FACILITY 連到院所；展開院所透過 HAS_DEPARTMENT 連到科別。'));nodes=[];edges=[];
+  svg.replaceChildren(shape('title',{},'行政區透過 HAS_MEDICAL_FACILITIES 連到院所；展開院所透過 HAS_DEPARTMENT 連到科別。'));nodes=[];edges=[];
   $('emptyGraph').hidden=rows.length>0;svg.toggleAttribute('hidden',!rows.length);$('listEmpty').hidden=!!rows.length;if(data){$('resultScope').textContent=`${data.county}${data.district} · ${typeLabel(data.type)}${data.department?' · '+data.department:''}`;}
   if(!data||!rows.length){$('facilityList').replaceChildren();$('listCount').textContent='0 間';if(data){$('emptyTitle').textContent=emptyMessage();$('emptyText').textContent='查詢已完成，沒有符合的院所，因此沒有關係圖可顯示。請調整上方條件。';$('listEmpty').textContent='沒有符合這次查詢條件的院所。';$('selectionTitle').textContent='沒有可選取的院所';$('selectionText').textContent='可改查全部院所、取消科別限制，或選擇其他行政區。';}$('nodeSearchStatus').textContent='';return;}
   const names=[...new Set(rows.filter(r=>expanded.has(r.sourceId)).flatMap(r=>r.departments))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
@@ -95,7 +95,7 @@ function render(){
   const defs=shape('defs'),marker=shape('marker',{id:'graphArrow',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});marker.append(shape('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:'#8da7bd'}));defs.append(marker);svg.append(defs);
   const addEdge=(from,to)=>{const line=shape('path',{class:'edge','marker-end':'url(#graphArrow)'});svg.append(line);edges.push({from,to,line});};
   rows.forEach(r=>{addEdge('district','f:'+r.sourceId);if(expanded.has(r.sourceId))r.departments.forEach(name=>addEdge('f:'+r.sourceId,'d:'+name));});
-  svg.append(shape('text',{x:270,y:25,class:'edge-label'},'包含院所 · HAS_FACILITY'));
+  svg.append(shape('text',{x:270,y:25,class:'edge-label'},'包含院所 · HAS_MEDICAL_FACILITIES'));
   if(names.length)svg.append(shape('text',{x:655,y:25,class:'edge-label'},'設有科別 · HAS_DEPARTMENT'));
   for(const n of nodes){
     n.g=shape('g',{class:`node ${n.kind}`,transform:`translate(${n.x} ${n.y})`,tabindex:'0',role:'button','aria-label':`${n.label}，${n.kind==='facility'?'展開科別及院所詳情':n.kind==='department'?'顯示相連院所':'顯示行政區摘要'}`,'data-node-id':n.id});

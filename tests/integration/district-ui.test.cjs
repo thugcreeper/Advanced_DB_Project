@@ -23,7 +23,7 @@ test('department search, source labeling and real markers work on desktop/mobile
       await page.click('#searchButton');await page.waitForFunction(()=>document.getElementById('totalCount').textContent==='共 14 筆');
       await page.locator('.sidebar a[href="../data/index.html"]').click();
       assert.equal(await page.locator('code').filter({hasText:'RECORD_DEPARTMENT'}).count(),1);
-      assert.equal(await page.locator('code').filter({hasText:'HAS_FACILITY'}).count(),1);
+      assert.equal(await page.locator('code').filter({hasText:'HAS_MEDICAL_FACILITIES'}).count(),1);
     }finally{await page.close();}
   }
 });

@@ -29,7 +29,7 @@ class AuraReadOnlyTest {
                     assertThat(summary.database().name()).isEqualTo(connection.database());
                     System.out.println(label + "=" + count);
                 }
-                for (var type : new String[]{"HAS_FACILITY","HAS_DEPARTMENT","RECORD_DEPARTMENT"}) {
+                for (var type : new String[]{"HAS_MEDICAL_FACILITIES","HAS_DEPARTMENT","RECORD_DEPARTMENT"}) {
                     long count = session.run("MATCH ()-[r:" + type + "]->() RETURN count(r) AS count").single().get("count").asLong();
                     assertThat(count).isPositive();
                     System.out.println(type + "=" + count);

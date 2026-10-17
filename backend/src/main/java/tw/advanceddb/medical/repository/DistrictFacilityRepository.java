@@ -26,7 +26,7 @@ public final class DistrictFacilityRepository {
             """;
     public record SearchResult(long total, long unassignedTotal, List<Facility> facilities) {}
     static final String SEARCH = """
-            MATCH (a:鄉鎮區碼與名稱)-[:HAS_FACILITY]->(n:醫療院所)
+            MATCH (a:鄉鎮區碼與名稱)-[:HAS_MEDICAL_FACILITIES]->(n:醫療院所)
             WHERE toString(a.鄉鎮市區碼) IN $countyCodes
               AND ($districtCode='' OR toString(a.鄉鎮市區碼)=$districtCode)
               AND (($type='all' AND n.type IN $allTypes) OR ($type='hospital' AND n.type IN $hospitalTypes)
@@ -39,7 +39,7 @@ public final class DistrictFacilityRepository {
             """;
     static final String UNASSIGNED = """
             MATCH (n:醫療院所) WHERE n.type IN $allTypes
-              AND NOT EXISTS { MATCH (:鄉鎮區碼與名稱)-[:HAS_FACILITY]->(n) }
+              AND NOT EXISTS { MATCH (:鄉鎮區碼與名稱)-[:HAS_MEDICAL_FACILITIES]->(n) }
             RETURN count(*) AS total
             """;
     private final Neo4jConnection connection;
