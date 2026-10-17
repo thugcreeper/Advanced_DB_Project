@@ -112,7 +112,7 @@ html.facility-modal-open { overflow: hidden; }
 .facility-modal .detail-section { padding: 22px 0; border-top: 1px solid var(--care-line); }
 .facility-modal .detail-section h3 { font-size: 19px; margin-bottom: 16px; }
 .facility-modal .detail-actions { padding: 14px 28px; gap: 12px; }
-.facility-modal .detail-call, .facility-modal .detail-google { flex: 0 1 190px; }
+.facility-modal .detail-call, .facility-modal .detail-google { flex: 1 1 0; }
 .facility-modal .detail-action-hint { text-align: left; }
 .facility-modal .detail-departments { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .facility-modal .detail-departments li { min-height: 58px; padding: 12px; background: #eaf3fc; color: #304e60; border-radius: 8px; }
@@ -141,7 +141,6 @@ html.facility-modal-open { overflow: hidden; }
   .facility-modal #detailTitle { font-size: 24px; }
   .facility-modal .detail-scroll { padding: 0 18px 18px; }
   .facility-modal .detail-actions { padding: 12px 18px max(12px, env(safe-area-inset-bottom)); }
-  .facility-modal .detail-call, .facility-modal .detail-google { flex: 1 1 110px; }
   .facility-modal .detail-departments { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .facility-modal .detail-departments li:nth-child(n) { background: #eaf3fc; }
   .facility-modal .detail-departments li:nth-child(4n + 3), .facility-modal .detail-departments li:nth-child(4n + 4) { background: #eaf5ed; }
