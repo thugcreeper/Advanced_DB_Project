@@ -18,7 +18,7 @@ test('example selection is editable and never executes automatically', async () 
   try {
     assert.equal(await page.locator('#exampleQuery option').count(),9);
     const titles=await page.locator('#exampleQuery option').allTextContents(); assert.ok(titles.every(t=>!/[，,?？]/.test(t)));
-    await page.selectOption('#exampleQuery','large-many'); assert.match(await page.locator('#exampleDescription').textContent(),/前 20%/);
+    await page.selectOption('#exampleQuery','large-many'); assert.match(await page.locator('#exampleDescription').textContent(),/第 80 百分位門檻/);
     assert.equal(requests,0);
     await page.fill('#cypherInput','RETURN 42 AS answer'); await page.click('#executeCypher');
     await page.waitForFunction(()=>document.getElementById('cypherStatus').textContent.includes('查詢完成'));

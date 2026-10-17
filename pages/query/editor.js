@@ -17,7 +17,7 @@ export function initializeEditor({ input, clearButton, form, status, exampleSele
   const loadExample = () => {
     cancel(); const example = selected(); input.value = example.query;
     description.replaceChildren();
-    [example.description, example.threshold, example.years, '缺少院所統計列以 0 計算並於結果註記，須與資料來源核對；家數與人數不等同就醫可近性。'].forEach(text => {
+    [example.description, example.threshold, example.years, '百分位門檻為目前觀察值，資料更新後動態計算結果可能改變。院所家數、人員數與每萬人口比率不直接等同就醫可近性。'].forEach(text => {
       const p = document.createElement('p'); p.textContent = text; description.append(p);
     });
     status.textContent = ''; onChange?.();

@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const base = process.env.CYPHER_BASE || 'http://127.0.0.1:18080';
 let examples;
+const { columns } = require('./core-contract.cjs');
 before(async () => {
   await require('./ready.cjs')(base);
   const source = fs.readFileSync(path.resolve(__dirname, '../../pages/query/examples.js'), 'utf8');
@@ -13,28 +14,21 @@ async function query(query, parameters = {}) {
   const response = await fetch(base + '/api/cypher/query', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ query, parameters }) });
   return { status: response.status, data: await response.json() };
 }
-test('nine real examples execute and retain district identifiers', async () => {
+test('nine user core examples execute with the exact requested columns', async () => {
   const records = [];
   for (const [index, example] of examples.entries()) {
     const { status, data } = await query(example.query);
     assert.equal(status, 200, example.label + ': ' + JSON.stringify(data));
-    assert.equal(data.truncated, false); assert.equal(data.columns[0], '行政區'); assert.ok(data.columns.includes('行政區碼'));
+    assert.equal(data.truncated, false); assert.deepEqual(data.columns, columns[index]);
     const objectRows = data.rows.map(row => Object.fromEntries(data.columns.map((column, i) => [column,row[i]])));
-    const thresholds = Object.fromEntries(data.columns.filter(name => /門檻|樣本數/.test(name)).map(name => [name, objectRows[0]?.[name] ?? null]));
-    if (index === 6 && data.rowCount === 0) {
-      const thresholdQuery = example.query.split('\nWHERE density>=densityP80')[0] + '\nRETURN DISTINCT densityP80 AS 密度P80門檻, densityP80Samples AS 密度有效樣本數';
-      const thresholdResult = await query(thresholdQuery); assert.equal(thresholdResult.status,200);
-      thresholdResult.data.columns.forEach((name,i)=>{ thresholds[name]=thresholdResult.data.rows[0]?.[i]; });
-    }
-    records.push({ number: index + 1, label: example.label, count: data.rowCount, thresholds, rows: objectRows });
+    records.push({ number: index + 1, label: example.label, count: data.rowCount, rows: objectRows });
   }
   fs.mkdirSync(path.join(__dirname,'artifacts'), { recursive:true });
   fs.writeFileSync(path.join(__dirname,'artifacts/examples.json'), JSON.stringify(records,null,2));
   for(const record of records) {
     assert.equal(record.count,record.rows.length);
-    assert.equal(new Set(record.rows.map(row=>row.行政區碼)).size,record.rows.length);
   }
-  console.log(JSON.stringify(records.map(({ number,count,thresholds })=>({ number,count,thresholds }))));
+  console.log(JSON.stringify(records.map(({ number,count })=>({ number,count }))));
 });
 test('parameterized custom query and read procedure execute', async () => {
   const result = await query('WITH $text AS text RETURN text, [1,2] AS list', { text: '可編輯查詢' });
