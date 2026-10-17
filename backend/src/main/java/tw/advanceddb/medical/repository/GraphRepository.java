@@ -12,7 +12,7 @@ public final class GraphRepository {
     public record Page(long total, List<FacilityNode> facilities) {}
     static final String MATCH = """
         MATCH (a:鄉鎮區碼與名稱)-[:HAS_MEDICAL_FACILITIES]->(f:醫療院所)
-        WHERE toString(a.鄉鎮市區碼) = $districtCode AND f.type IN $types
+        WHERE toString(a.鄉鎮市區碼) = $districtCode AND f.院所類型 IN $types
           AND ($department = '' OR EXISTS {
             MATCH (f)-[:HAS_DEPARTMENT]->(selected:科別) WHERE selected.科別名稱 = $department
           })
@@ -25,10 +25,10 @@ public final class GraphRepository {
                     "offset", offset, "limit", limit);
                 long total = tx.run(MATCH + "RETURN count(DISTINCT f) AS total", params).single().get("total").asLong();
                 var rows = tx.run(MATCH + """
-                    WITH DISTINCT f ORDER BY f.name, f.sourceId SKIP $offset LIMIT $limit
+                    WITH DISTINCT f ORDER BY f.名稱, f.sourceId SKIP $offset LIMIT $limit
                     OPTIONAL MATCH (f)-[:HAS_DEPARTMENT]->(d:科別)
                     WITH f, d ORDER BY d.科別名稱
-                    RETURN f.sourceId AS id, f.name AS name, f.type AS type,
+                    RETURN f.sourceId AS id, f.名稱 AS name, f.院所類型 AS type,
                            collect(DISTINCT d.科別名稱) AS departments ORDER BY name, id
                     """, params).list(r -> new FacilityNode(r.get("id").asString(), r.get("name").asString("未提供名稱"),
                         r.get("type").asString(""), r.get("departments").asList(Value::asString)));

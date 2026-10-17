@@ -19,8 +19,9 @@ public final class DistrictFacilityRepository {
             MATCH (f:醫療院所 {sourceId: $sourceId})
             OPTIONAL MATCH (f)-[:HAS_DEPARTMENT]->(d:科別)
             WITH f, d ORDER BY d.科別名稱
-            RETURN f{.sourceId, .name, .type, .address, .phone, .clinicTimeJson, .notes, .source,
-                latitude: toFloatOrNull(f.latitude), longitude: toFloatOrNull(f.longitude),
+            RETURN f{.sourceId, name: f.名稱, type: f.院所類型, address: f.地址, phone: f.電話,
+                .clinicTimeJson, notes: f.備註, source: f.資料來源,
+                latitude: toFloatOrNull(f.緯度), longitude: toFloatOrNull(f.經度),
                 locationReviewRequired: coalesce(f.districtCoordinateConflict, false)} AS facility,
                 collect(DISTINCT d.科別名稱) AS departments
             """;
@@ -29,16 +30,16 @@ public final class DistrictFacilityRepository {
             MATCH (a:鄉鎮區碼與名稱)-[:HAS_MEDICAL_FACILITIES]->(n:醫療院所)
             WHERE toString(a.鄉鎮市區碼) IN $countyCodes
               AND ($districtCode='' OR toString(a.鄉鎮市區碼)=$districtCode)
-              AND (($type='all' AND n.type IN $allTypes) OR ($type='hospital' AND n.type IN $hospitalTypes)
-                OR ($type='clinic' AND n.type IN $clinicTypes))
+              AND (($type='all' AND n.院所類型 IN $allTypes) OR ($type='hospital' AND n.院所類型 IN $hospitalTypes)
+                OR ($type='clinic' AND n.院所類型 IN $clinicTypes))
               AND ($department='' OR EXISTS { MATCH (n)-[:HAS_DEPARTMENT]->(:科別 {科別名稱:$department}) })
-            WITH DISTINCT n ORDER BY n.name, n.sourceId
-            RETURN count(n) AS total, collect(n{.sourceId, .name, .type, .address, .phone,
-                latitude: toFloatOrNull(n.latitude), longitude: toFloatOrNull(n.longitude),
+            WITH DISTINCT n ORDER BY n.名稱, n.sourceId
+            RETURN count(n) AS total, collect(n{.sourceId, name: n.名稱, type: n.院所類型, address: n.地址, phone: n.電話,
+                latitude: toFloatOrNull(n.緯度), longitude: toFloatOrNull(n.經度),
                 locationReviewRequired: coalesce(n.districtCoordinateConflict, false)}) AS facilities
             """;
     static final String UNASSIGNED = """
-            MATCH (n:醫療院所) WHERE n.type IN $allTypes
+            MATCH (n:醫療院所) WHERE n.院所類型 IN $allTypes
               AND NOT EXISTS { MATCH (:鄉鎮區碼與名稱)-[:HAS_MEDICAL_FACILITIES]->(n) }
             RETURN count(*) AS total
             """;

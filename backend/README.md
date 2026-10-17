@@ -41,3 +41,19 @@ Java 變更需重新建置並重新啟動，瀏覽器頁面也需重新載入。
 一次性搬移工具、管理 launcher 與專用測試已移除，網站只使用整合後的查詢程式。
 舊來源 JSON 匯入程式、批次入口與 VS Code 專用執行設定亦已移除；正常啟動入口仍是 MedicalResourceApplication。
 備份、稽核快照與驗證紀錄保留；歷史整合與資料庫還原說明見 [管理文件](../docs/specs/neo4j-integration-operations.md)。
+
+
+### 醫療院所屬性映射
+
+`醫療院所` 節點使用中文屬性：`名稱`、`地址`、`電話`、`緯度`、`經度`、`院所類型`、`備註`、`資料來源`。
+Repository 將其投影為既有 API 欄位 `name`、`address`、`phone`、`latitude`、`longitude`、`type`、`notes`、`source`；前端與 DTO 保持相容。
+`sourceId`、`clinicTimeJson`（含內部 JSON 欄位）、`_integrationOwner` 保持英文。
+這些對映只適用於 `醫療院所`，不適用於行政區、科別、統計節點或來源 JSON 的同名欄位。
+
+目前主分支沒有院所匯入或更新入口。若日後取回封存工具，必須先更新其 `醫療院所` 寫入映射：
+`name → 名稱`、`address → 地址`、`phone → 電話`、`latitude → 緯度`、`longitude → 經度`、`type → 院所類型`、`notes → 備註`、`source → 資料來源`。
+不可直接重用會寫入舊英文屬性的封存工具；API DTO 的英文名稱不代表資料庫寫入欄位。
+本次更新不包含資料庫遷移或匯入操作。
+
+離線驗證：Maven 測試與 `node --test tests/integration/facility-property-contract.test.cjs tests/integration/graph.test.cjs`。
+有 Aura 設定時可啟用 `AURA_READ_TESTS=true`，執行 `AuraReadOnlyTest` 核對實際中文屬性與 API 投影；該測試只讀取資料。
