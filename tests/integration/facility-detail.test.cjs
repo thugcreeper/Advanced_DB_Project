@@ -16,7 +16,7 @@ async function ready(viewport={width:1440,height:1000}){
   await page.click('#searchButton');await page.waitForFunction(()=>document.getElementById('totalCount').textContent==='共 14 筆');
   return page;
 }
-test('marker and result open the same nonmodal detail, focus returns and map stays usable',async()=>{
+test('marker and result open the same centered modal detail, focus returns and map stays usable',async()=>{
   const page=await ready();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
     const row=page.locator('#facilityResults li').first();const id=await row.getAttribute('data-source-id');
@@ -31,7 +31,7 @@ test('marker and result open the same nonmodal detail, focus returns and map sta
     await row.locator('.facility-open').click();await page.locator('#detailContent').waitFor({state:'visible'});
     assert.equal(await page.locator('#detailTitle').textContent(),name);
     assert.equal(await row.locator('.facility-open').getAttribute('aria-pressed'),'true');
-    await page.click('#resetMap');assert.equal(await page.locator('#facilityDetail').isVisible(),true);
+    await page.click('#detailClose');await page.click('#resetMap');assert.equal(await page.locator('#facilityDetail').isVisible(),false);
     await row.locator('.locate-button').click();assert.equal(await page.locator('#facilityDetail').isVisible(),false);
     const markerBounds=await page.locator(`path[data-source-id="${id}"]`).boundingBox(),mapBounds=await page.locator('#map').boundingBox();
     assert.ok(markerBounds.x>=mapBounds.x&&markerBounds.x+markerBounds.width<=mapBounds.x+mapBounds.width);
@@ -73,12 +73,12 @@ test('missing fields, malformed hours, loading, errors and late responses never 
       return route.fulfill({json:{sourceId:id,name:id===ids[0]?'較早院所':'目前院所',type:'診所',address:'',phone:'',departments:[],clinicHours:{status:mode==='invalid'?'invalid':'missing',days:[]},notes:'',source:'',latitude:null,longitude:null,locationReviewRequired:false}});
     });
     await buttons.nth(0).click();await page.locator('#detailStatus').filter({hasText:'載入院所資料中'}).waitFor();
-    await buttons.nth(1).click();await page.locator('#detailContent').waitFor({state:'visible'});
+    await buttons.nth(1).evaluate(button=>button.click());await page.locator('#detailContent').waitFor({state:'visible'});
     await page.waitForTimeout(650);assert.equal(await page.locator('#detailTitle').textContent(),'目前院所');
-    assert.match(await page.locator('#detailContent').textContent(),/尚無科別資料/);
-    assert.match(await page.locator('#detailContent').textContent(),/暫無診療時間資料/);
+    assert.match(await page.locator('#detailContent').textContent(),/暫無科別資料/);
+    assert.match(await page.locator('#detailContent').textContent(),/未提供資料/);
     assert.equal(await page.locator('#detailLocate').count(),0);assert.equal(await page.locator('#detailGoogle').isVisible(),false);
-    mode='error';await buttons.nth(1).click();await page.locator('#detailRetry').waitFor({state:'visible'});
+    mode='error';await page.click('#detailClose');await buttons.nth(1).click();await page.locator('#detailRetry').waitFor({state:'visible'});
     assert.match(await page.locator('#detailStatus').textContent(),/測試連線失敗/);
     mode='missing';await page.click('#detailRetry');await page.waitForFunction(()=>document.getElementById('detailStatus').textContent.includes('查無此院所'));
     mode='invalid';await page.click('#detailRetry');await page.locator('#detailContent').waitFor({state:'visible'});

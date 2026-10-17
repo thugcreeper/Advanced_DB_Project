@@ -24,7 +24,7 @@ function highlight(id, reveal = false) {
 function selectFacility(row,opener) {
   highlight(row.sourceId,true);
   get('facilityResults').querySelectorAll('.facility-open').forEach(button=>button.setAttribute('aria-expanded',String(button.closest('li').dataset.sourceId===row.sourceId)));
-  detail.open(row,opener);map.ensureVisible(row.sourceId);
+  detail.open(row,opener);
 }
 function locateFacility(row) {
   if(!map.available){showSnackbar('地圖暫時無法使用，仍可查看院所詳情。',{error:true});return;}

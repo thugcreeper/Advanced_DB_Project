@@ -89,3 +89,65 @@
 @media (max-width:1100px) {
   .map-wrap:has(> .facility-detail:not([hidden])) .leaflet-bottom.leaflet-right { bottom: var(--detail-bottom-overlap,0px); }
 }
+
+/* District details use one native modal; the graph page retains its existing drawer. */
+html:has(.facility-modal) { scrollbar-gutter: stable both-edges; }
+html.facility-modal-open { overflow: hidden; }
+.facility-modal:not([open]) { display: none; }
+.facility-modal { inset: 0; margin: auto; width: min(920px, calc(100vw - 32px)); max-width: calc(100vw - 32px); height: auto; max-height: 90vh; max-height: 90dvh; min-height: 0; padding: 0; border: 1px solid #dce5df; border-radius: 16px; box-shadow: 0 24px 80px #102b3540; overflow: hidden; color: #263b32; }
+.facility-modal::backdrop { background: #132a3a99; }
+.facility-modal .detail-header { padding: 16px 28px 18px; }
+.facility-modal .detail-toolbar { margin-bottom: 0; }
+.facility-modal .detail-eyebrow { letter-spacing: .08em; }
+.facility-modal #detailTitle { font-size: 30px; line-height: 1.45; margin: 0 0 10px; }
+.facility-modal .detail-type { margin-bottom: 0; }
+.facility-modal .detail-scroll { padding: 0 28px 24px; overflow-x: hidden; }
+.facility-modal .detail-contact { padding: 22px 0; }
+.facility-modal .detail-facts { grid-template-columns: 66px minmax(0, 1fr); gap: 14px 16px; }
+.facility-modal .detail-facts dt { display: flex; align-items: center; gap: 8px; padding: 0; font-size: 13px; }
+.facility-modal .detail-facts dd { font-size: 15px; }
+.detail-contact-symbol { font-size: 19px; line-height: 1; width: 18px; text-align: center; }
+.detail-map-link { display: inline-block; margin-top: 16px; color: #195a97; font-size: 14px; text-underline-offset: 4px; }
+.facility-modal .detail-section { padding: 22px 0; border-top: 1px solid var(--care-line); }
+.facility-modal .detail-section h3 { font-size: 19px; margin-bottom: 16px; }
+.facility-modal .detail-actions { padding: 14px 28px; gap: 12px; }
+.facility-modal .detail-call, .facility-modal .detail-google { flex: 0 1 190px; }
+.facility-modal .detail-action-hint { text-align: left; }
+.facility-modal .detail-departments { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.facility-modal .detail-departments li { min-height: 58px; padding: 12px; background: #eaf3fc; color: #304e60; border-radius: 8px; }
+.facility-modal .detail-departments li:nth-child(6n + 4), .facility-modal .detail-departments li:nth-child(6n + 5), .facility-modal .detail-departments li:nth-child(6n + 6) { background: #eaf5ed; }
+.clinic-table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; border-radius: 8px; border: 1px solid #dce9df; }
+.clinic-table-scroll:focus-visible { outline: 2px solid #2476d2; outline-offset: 3px; }
+.clinic-table { width: 100%; min-width: 720px; table-layout: fixed; border-collapse: separate; border-spacing: 0; text-align: center; font-size: 14px; color: #246036; }
+.clinic-table caption { text-align: left; }
+.clinic-table th, .clinic-table td { padding: 13px 5px; border-bottom: 1px solid #fff; border-right: 1px solid #fff; vertical-align: middle; background: #fff; }
+.clinic-table thead th { font-size: 16px; font-weight: 700; }
+.clinic-table th:first-child { width: 90px; }
+.clinic-table [data-weekday="monday"], .clinic-table [data-weekday="wednesday"], .clinic-table [data-weekday="friday"], .clinic-table [data-weekday="sunday"] { background: #eaf5ec; }
+.clinic-table .is-today { background: #ffe392 !important; color: #665016; }
+.clinic-table th[data-today]::after { content: '今天'; display: block; font-size: 10px; font-weight: 500; margin-top: 3px; }
+.clinic-table .clinic-slot-label { font-size: 13px; font-weight: 600; }
+.clinic-session-dot { display: block; width: 11px; height: 11px; margin: 0 auto 8px; background: #1c6b2c; border-radius: 50%; }
+.clinic-interval { display: block; white-space: nowrap; font-size: 13px; font-variant-numeric: tabular-nums; color: #25422f; }
+.clinic-table .clinic-overnight { display: block; margin-top: 4px; }
+.clinic-cell-state { color: #65786a; font-size: 12px; }
+.clinic-cell-state.is-closed { font-size: 20px; }
+.clinic-closed-label { display: block; font-size: 12px; margin-top: 5px; }
+.clinic-table-legend { color: #536f5c; font-size: 12px; line-height: 1.8; margin-top: 12px; }
+@media (max-width: 700px) {
+  .facility-modal { width: calc(100vw - 24px); max-width: calc(100vw - 24px); border-radius: 12px; }
+  .facility-modal .detail-header { padding: 12px 18px 16px; }
+  .facility-modal #detailTitle { font-size: 24px; }
+  .facility-modal .detail-scroll { padding: 0 18px 18px; }
+  .facility-modal .detail-actions { padding: 12px 18px max(12px, env(safe-area-inset-bottom)); }
+  .facility-modal .detail-call, .facility-modal .detail-google { flex: 1 1 110px; }
+  .facility-modal .detail-departments { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .facility-modal .detail-departments li:nth-child(n) { background: #eaf3fc; }
+  .facility-modal .detail-departments li:nth-child(4n + 3), .facility-modal .detail-departments li:nth-child(4n + 4) { background: #eaf5ed; }
+}
+@media (max-width: 350px) {
+  .facility-modal .detail-departments { grid-template-columns: minmax(0, 1fr); }
+  .facility-modal .detail-departments li:nth-child(n) { background: #eaf3fc; }
+  .facility-modal .detail-departments li:nth-child(even) { background: #eaf5ed; }
+  .facility-modal #detailTitle { font-size: 21px; }
+}

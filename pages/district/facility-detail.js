@@ -3,6 +3,7 @@ import { request } from "../../shared/api.js";
 import { createIcon } from "../../shared/ui-icons.js";
 import { hasLocation } from "./map.js";
 import { createClinicWeek } from "./clinic-week.js";
+import { createClinicTable } from "./clinic-table.js";
 
 function telephone(value) {
   if(typeof value!=='string'||!/^[+\d\s()#-]+$/.test(value))return '';
@@ -26,7 +27,8 @@ export function createFacilityDetail({ onClose }) {
   const get = id => document.getElementById(id);
   const panel = get("facilityDetail"), content = get("detailContent"), status = get("detailStatus");
   const title = get("detailTitle"), type = get("detailType"), retry = get("detailRetry"), actions = get("detailActions");
-  let current, controller, version = 0, opener;
+  const modal = panel.tagName === "DIALOG";
+  let current, controller, version = 0, opener, disposeWeek = () => {};
   get("detailClose").append(createIcon("x"));
 
 
@@ -41,18 +43,23 @@ export function createFacilityDetail({ onClose }) {
         const link = element("a", "", value); link.href = telephone(value);
         dd.replaceChildren(link);
       }
-      list.append(element("dt", "", label), dd);
+      const term = element("dt");
+      if (modal) { const icon = label === "地址" ? createIcon("map-pin") : element("span", "detail-contact-symbol", "☎"); icon.setAttribute("aria-hidden", "true"); term.append(icon); }
+      term.append(element("span", "", label)); list.append(term, dd);
     }
     contact.append(list);
-    const names = [...new Set((data.departments || []).filter(name => typeof name === "string" && name.trim()))];
+    const names = [...new Set((Array.isArray(data.departments) ? data.departments : []).filter(name => typeof name === "string").map(name => name.trim()).filter(Boolean))];
     const departments = section(`診療科別（共 ${names.length} 項）`);
     if (names.length) {
       const tags = element("ul", "detail-departments");
       tags.setAttribute("aria-label", "院所診療科別");
       names.forEach(name => tags.append(element("li", "", name)));
       departments.append(tags);
-    } else departments.append(element("p", "detail-muted", "尚無科別資料"));
-    content.replaceChildren(contact, createClinicWeek(data.clinicHours), departments);
+    } else departments.append(element("p", "detail-muted", modal ? "暫無科別資料" : "尚無科別資料"));
+    disposeWeek();
+    const week = modal ? createClinicTable(data.clinicHours) : { element: createClinicWeek(data.clinicHours), destroy() {} };
+    disposeWeek = week.destroy;
+    content.replaceChildren(contact, week.element, departments);
     if (data.notes?.trim()) {
       const notes = section("備註"); notes.append(element("p", "detail-notes", data.notes)); content.append(notes);
     }
@@ -73,6 +80,10 @@ export function createFacilityDetail({ onClose }) {
     google.hidden = !query;
     if (query) google.href = `https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query })}`;
     else google.removeAttribute("href");
+    if (modal && query) {
+      const link = element("a", "detail-map-link", "Google 地圖（另開分頁）");
+      link.href = google.href; link.target = "_blank"; link.rel = "noopener noreferrer"; contact.append(link);
+    }
     if(!query)hints.push('未提供有效座標或完整地址，無法開啟 Google 地圖');
     get('detailActionHint').textContent=hints.join('；');get('detailActionHint').hidden=!hints.length;
     actions.hidden = !tel&&!query;
@@ -80,7 +91,7 @@ export function createFacilityDetail({ onClose }) {
   async function load() {
     controller?.abort(); controller = new AbortController();
     const token = ++version, id = current.sourceId;
-    content.hidden = true; content.replaceChildren(); actions.hidden = true; retry.hidden = true;
+    disposeWeek(); content.hidden = true; content.replaceChildren(); actions.hidden = true; retry.hidden = true;
     status.hidden = false; status.textContent = "載入院所資料中…"; status.classList.remove("is-error");
     panel.setAttribute("aria-busy", "true");
     try {
@@ -90,28 +101,47 @@ export function createFacilityDetail({ onClose }) {
       render(data); content.hidden = false; status.textContent = ""; status.hidden = true;
     } catch (error) {
       if (error.name === "AbortError" || token !== version) return;
-      showSnackbar("院所詳情載入失敗，請在詳情面板重試。",{error:true});status.textContent = error.message; status.classList.add("is-error"); retry.hidden = false;
+      showSnackbar("院所詳情載入失敗，請在詳情視窗重試。",{error:true});status.textContent = error.message; status.classList.add("is-error"); retry.hidden = false;
     } finally {
       if (token === version) panel.setAttribute("aria-busy", "false");
     }
   }
   function close({ restoreFocus = true } = {}) {
     const wasOpen = !panel.hidden;
-    ++version; controller?.abort(); panel.hidden = true; panel.setAttribute("aria-busy", "false");
+    ++version; controller?.abort(); disposeWeek();
+    if (modal && panel.open) panel.close();
+    panel.hidden = true; panel.setAttribute("aria-busy", "false");
+    if (modal) document.documentElement.classList.remove("facility-modal-open");
     content.replaceChildren(); current = null; delete panel.dataset.sourceId;
     if (wasOpen) {
-      onClose();
+      onClose?.();
       if (restoreFocus) (opener?.isConnected ? opener : get("searchButton"))?.focus({ preventScroll: true });
     }
   }
   get("detailClose").addEventListener("click", () => close());
   retry.addEventListener("click", load);
+  if (modal) {
+    panel.addEventListener('cancel', event => { event.preventDefault(); close(); });
+    panel.addEventListener('keydown', event => {
+      if (event.key !== 'Tab') return;
+      const items = [...panel.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')].filter(item => item.getClientRects().length && !item.closest('[hidden]'));
+      if (!items.length) { event.preventDefault(); title.focus(); return; }
+      const first = items[0], last = items.at(-1), active = document.activeElement;
+      if (event.shiftKey && (active === first || !items.includes(active))) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
+    });
+    panel.addEventListener('close', () => { if (!panel.open && !panel.hidden) close(); });
+    const outside = event => { const box = panel.getBoundingClientRect(); return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom; };
+    let backdropPress = false;
+    panel.addEventListener('pointerdown', event => { backdropPress = event.target === panel && outside(event); });
+    panel.addEventListener('click', event => { if (backdropPress && event.target === panel && outside(event)) close(); backdropPress = false; });
+  }
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && !panel.hidden && !get("aboutDialog").open) { event.preventDefault(); close(); }
   });
   function layout() {
-    if(panel.hidden)return;
+    if(panel.hidden || modal)return;
     if(matchMedia('(max-width:1100px)').matches){
       for(const key of ['top','right','width','height'])panel.style.removeProperty(key);
       const box=panel.parentElement.getBoundingClientRect(),sheet=panel.getBoundingClientRect();
@@ -126,7 +156,8 @@ export function createFacilityDetail({ onClose }) {
   window.addEventListener('resize',layout);window.addEventListener('scroll',layout,{passive:true});
   return {
     open(row, trigger) {
-      opener = trigger || document.activeElement; current = row; panel.hidden = false; panel.dataset.sourceId=row.sourceId; layout();
+      opener = trigger || document.activeElement; current = row; panel.hidden = false; panel.dataset.sourceId=row.sourceId;
+      if (modal) { document.documentElement.classList.add('facility-modal-open'); if (!panel.open) panel.showModal(); } else layout();
       title.textContent = row.name || "院所詳情"; type.textContent = row.type || ""; type.hidden = !row.type;
       get("detailScroll").scrollTop = 0; title.focus({ preventScroll: true }); load();
     }, close,

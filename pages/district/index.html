@@ -5,8 +5,8 @@
 <meta name="api-base" content="https://advanced-db-project-s6bd.onrender.com">
 <title>行政區查詢｜臺灣醫療資源分析系統</title>
 <link rel="stylesheet" href="../../shared/vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css?v=20261017-drawer">
-<link rel="stylesheet" href="facility-detail.css?v=20261017-drawer">
+<link rel="stylesheet" href="../../shared/styles.css"><link rel="stylesheet" href="styles.css?v=20261017-modal">
+<link rel="stylesheet" href="facility-detail.css?v=20261017-modal">
 </head>
 <body>
 <header class="topbar"><strong>臺灣醫療資源分析系統</strong><button class="text-button" id="aboutButton" type="button">ⓘ 關於本專案</button></header>
@@ -47,9 +47,16 @@
 <div class="map-wrap"><div id="map" aria-label="醫療院所互動地圖"></div>
 <button id="resetMap" class="map-home" type="button" title="返回臺灣全圖" aria-label="返回臺灣全圖">⌂</button>
 <div class="map-legend"><span><i class="hospital-dot"></i>醫院</span><span><i class="clinic-dot"></i>診所</span></div>
-<aside id="facilityDetail" class="facility-detail" role="dialog" aria-modal="false" aria-labelledby="detailTitle" hidden>
+
+</div><p id="mapStatus" class="map-status" role="status" hidden></p>
+</section>
+</div>
+</main>
+</div>
+
+<dialog id="facilityDetail" class="facility-detail facility-modal" aria-modal="true" aria-labelledby="detailTitle" hidden>
 <header class="detail-header"><div class="detail-toolbar"><span class="detail-eyebrow">院所詳情</span><button id="detailClose" class="detail-icon-button" type="button" title="關閉院所詳情" aria-label="關閉院所詳情"></button></div>
-<div class="detail-identity"><span id="detailType" class="detail-type" hidden></span><h2 id="detailTitle" tabindex="-1">院所詳情</h2></div>
+<div class="detail-identity"><h2 id="detailTitle" tabindex="-1">院所詳情</h2><span id="detailType" class="detail-type" hidden></span></div>
 </header>
 <div id="detailScroll" class="detail-scroll" tabindex="-1">
 <p id="detailStatus" class="detail-status" role="status" aria-live="polite"></p>
@@ -57,13 +64,7 @@
 <div id="detailContent" hidden></div>
 </div>
 <footer id="detailActions" class="detail-actions" hidden><a id="detailCall" class="detail-call" role="link" aria-disabled="true" tabindex="-1">撥打電話</a><a id="detailGoogle" class="detail-google" target="_blank" rel="noopener noreferrer">Google 地圖<span class="sr-only">（另開分頁）</span></a><p id="detailActionHint" class="detail-action-hint" hidden></p></footer>
-</aside>
-</div><p id="mapStatus" class="map-status" role="status" hidden></p>
-</section>
-</div>
-</main>
-</div>
-
+</dialog>
 <dialog id="aboutDialog"><h2>關於本專案</h2><p>臺灣醫療資源分析系統。行政區查詢使用實際院所資料；查詢分析頁面使用政府統計資料。</p><form method="dialog"><button class="secondary">關閉</button></form></dialog>
 <script src="../../shared/vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script>
 </body>
